@@ -1,0 +1,8 @@
+Fase,Duración,Objetivos_Clave,Criterios_Éxito
+Fase 1: Setup Base,1-2 semanas,"Configurar infraestructura, APIs, wallet, conexión a Polymarket CLOB","APIs funcionando, latencia <100ms, logs operativos"
+Fase 2: Estrategia Inicial,2-3 semanas,Implementar 1 bot con estrategia simple (ej: Market Making en mercados de baja volatilidad),"Bot ejecuta trades correctamente, sin errores críticos"
+Fase 3: Backtesting,1-2 semanas,"Validar estrategia con datos históricos, calibrar parámetros de risk management","ROI backtested positivo, Sharpe ratio >0.8, max drawdown <20%"
+Fase 4: Paper Trading,2-4 semanas,"Ejecutar bot en modo simulación (sin capital real) por 2-4 semanas, tracking de métricas","Win rate paper trading >55%, sin errores de ejecución, P&L simulado positivo"
+Fase 5: Producción Limitada,1-2 semanas,"Desplegar con capital limitado ($500-1,000), monitoreo intensivo 24/7","P&L real positivo después de 2 semanas, sin violations de risk limits"
+Fase 6: Escalamiento,2-3 semanas,"Aumentar capital gradualmente si métricas positivas (Sharpe >1, drawdown <15%)","ROI sostenido >10% mensual, drawdown <15%, Sharpe >1.2"
+Fase 7: Multi-Bot Portfolio,Continuo,"Implementar bots adicionales según plan (4 agresivos, 4 neutro-agresivos, 2 poco agresivos)","Portfolio diversificado, correlación entre bots <0.6, ROI portfolio >15% mensual"

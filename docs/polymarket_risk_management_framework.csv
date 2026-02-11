@@ -1,0 +1,11 @@
+Componente,Descripción,Implementación_Técnica,Prioridad
+Position Sizing,Dimensionamiento óptimo usando Kelly Criterion (Half/Quarter Kelly para reducir volatilidad),"Función calc_kelly_size(win_rate, avg_win, avg_loss, fraction=0.5)",Crítica
+Stop Loss Dinámico,Stop loss basado en probabilidad: exit cuando odds empeoran más allá del umbral calculado,if current_price > entry_price * (1 + threshold): exit_position(),Alta
+Circuit Breakers,Detener trading automáticamente tras 3-5 pérdidas consecutivas o pérdida diaria >5%,consecutive_losses counter; if >= 3: pause_strategy(hours=24),Crítica
+Límites de Capital por Estrategia,"Máximo 3-5% de capital total por estrategia individual, 15-20% por bot",max_per_strategy = bankroll * 0.05; max_per_bot = bankroll * 0.20,Crítica
+Límites de Drawdown,Detención permanente si drawdown alcanza 25% (individual) o 40% (portfolio total),if (peak_capital - current_capital) / peak_capital >= 0.25: halt_trading(),Crítica
+Diversificación de Mercados,"Nunca más del 60% de capital en un solo tipo de mercado (política, cripto, deportes)",track_exposure_by_category(); rebalance if single category > 0.60,Media
+Gestión de Liquidez,"Verificar depth mínimo de $10,000 en order book antes de entrar posición >$1,000",query_orderbook_depth(); if depth < threshold: skip_trade(),Alta
+Monitoreo de Slippage,Rechazar trades con slippage proyectado >2% del precio objetivo,simulated_fill_price = get_expected_fill(); if abs(simulated - target) / target > 0.02: abort,Media
+Control de Latencia,"Mantener latencia de ejecución <100ms, alertar si supera 200ms",measure_roundtrip_latency(); if latency > 200: alert_admin(),Alta
+Backup & Failover Systems,"Servidor primario + VPS backup, sistema de alertas por Telegram/Discord",primary_server health_check; if down: failover_to_vps(); send_alert(),Alta

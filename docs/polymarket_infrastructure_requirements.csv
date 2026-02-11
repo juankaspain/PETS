@@ -1,0 +1,9 @@
+Componente,Especificación_Mínima,Costo_Mensual_Estimado
+Hardware,"CPU: 4 cores, RAM: 8GB, SSD: 100GB",$0 (local) - $50 (dedicado)
+Servidor/VPS,"VPS en región cercana a Polygon nodes (US/EU), latencia <50ms a RPC",$20-100 (DigitalOcean/AWS)
+Conectividad,"Conexión estable 100+ Mbps, WebSocket connections para real-time data",$50-100 (plan empresarial)
+Base de Datos,"PostgreSQL/MongoDB para históricos, Redis para caché en memoria",$0-50 (según volumen)
+APIs Esenciales,"Polymarket CLOB API, Gamma API, Polygon RPC, Binance/Coinbase APIs",$0 (mayoría free tier)
+Lenguajes/Framework,"Python 3.9+ (asyncio, aiohttp), Node.js 18+ para WebSocket handlers",$0 (open source)
+Monitoreo,"Grafana + Prometheus para métricas, logs centralizados (ELK stack opcional)",$0-50 (Grafana Cloud free tier disponible)
+Seguridad,"Wallet con proxy dedicado, never exponer private keys en código, 2FA en APIs",$0 (buenas prácticas)
