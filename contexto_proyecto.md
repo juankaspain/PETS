@@ -351,11 +351,18 @@ Formula Half Kelly: `f* = (bp - q) / b / 2`
 ### Fase 1: ✅ Estructura (COMPLETADO)
 52 dirs, 168 files, Git initialized
 
-### Fase 2: ⏳ Config Files (ACTUAL)
-requirements.txt, pyproject.toml, pytest.ini, .pre-commit-config.yaml, docker-compose.yml (16 services), Makefile (25 commands)
-**ETA**: 4-5h
+### Fase 2: ✅ Config Files (COMPLETADO)
+- requirements.txt: 30+ production dependencies (FastAPI, asyncpg, web3, redis)
+- requirements-dev.txt: Testing/linting tools (pytest, black, ruff, mypy)
+- pyproject.toml: Strict type checking + code quality configs
+- pytest.ini: 80% coverage threshold + async support
+- .pre-commit-config.yaml: 6 hooks (black, ruff, mypy, gitleaks)
+- docker-compose.yml: 16 services (TimescaleDB, Redis, API, Dashboard, Bots, Monitoring)
+- docker-compose.dev.yml: Development environment
+- docker-compose.test.yml: Test environment
+- Makefile: 25 commands (install, test, lint, docker, migrate, backup)
 
-### Fase 3: ⏳ Core Services (1 SEMANA)
+### Fase 3: ⏳ Core Services (ACTUAL - 1 SEMANA)
 models.py, redis_client.py, timescaledb.py, event_bus.py, wallet_manager.py, gas_manager.py, websocket_gateway.py, market_data_processor.py, risk_manager.py, order_execution_engine.py
 **ETA**: 40h
 
@@ -597,6 +604,6 @@ docs(context): update contexto_proyecto.md - [razón]
 
 ---
 
-*Última actualización: 2026-02-11*  
-*Versión: 1.0*  
+*Última actualización: 2026-02-12*  
+*Versión: 1.1*  
 *Autor: Juan [juankaspain]*
