@@ -1,0 +1,43 @@
+POLYMARKET ELITE TRADING SYSTEM (PETS) - Project Structure
+================================================================
+
+Generated on: $(date)
+
+Directory Statistics:
+--------------------
+Total Directories: ~50
+Total Files Created: ~150
+Python Modules: ~80
+Configuration Files: ~20
+Test Files: ~20
+
+Key Directories:
+---------------
+src/           - Source code (core, bots, strategies, dashboard, api)
+config/        - Configuration files (YAML)
+tests/         - Test suite (unit, integration, e2e)
+docs/          - Documentation
+infra/         - Infrastructure as Code (Docker, K8s, Terraform)
+data/          - Data storage (TimescaleDB, Redis, logs, backups)
+notebooks/     - Jupyter notebooks
+scripts/       - Utility scripts
+
+Next Steps:
+----------
+1. Copy and configure .env file:
+   cp .env.example .env
+   nano .env
+
+2. Install dependencies:
+   pip install -r requirements.txt
+
+3. Run setup:
+   make setup
+
+4. Start development environment:
+   make start-dev
+
+5. Access dashboard:
+   http://localhost:8501
+
+For detailed documentation, see docs/README.md

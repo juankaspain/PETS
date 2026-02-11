@@ -1,0 +1,19 @@
+# Bot Configuration Template
+bot_id: PLACEHOLDER
+name: "Bot Name"
+enabled: false
+strategy_type: "agresivo"
+
+capital:
+  allocation_percentage: 10
+  min_position_size_usd: 10
+  max_position_size_usd: 1000
+
+risk_management:
+  max_drawdown_percentage: 25
+  max_consecutive_losses: 3
+  daily_loss_limit_percentage: 5
+
+# Strategy-specific configuration
+strategy:
+  # Add strategy parameters here
