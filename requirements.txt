@@ -1,1 +1,51 @@
-# Python dependencies (to be populated)
+# Core async
+asyncio-mqtt==0.16.1
+aiohttp==3.9.1
+websockets==12.0
+
+# FastAPI
+fastapi==0.108.0
+uvicorn[standard]==0.25.0
+python-multipart==0.0.6
+pydantic==2.5.3
+pydantic-settings==2.1.0
+
+# Database
+asyncpg==0.29.0
+sqlalchemy[asyncio]==2.0.25
+alembic==1.13.1
+redis[hiredis]==5.0.1
+
+# Blockchain
+web3==6.13.0
+eth-account==0.10.0
+eth-utils==2.3.1
+
+# Data processing
+pandas==2.1.4
+numpy==1.26.2
+python-dateutil==2.8.2
+
+# HTTP clients
+httpx==0.26.0
+requests==2.31.0
+
+# Monitoring
+prometheus-client==0.19.0
+opentelemetry-api==1.22.0
+opentelemetry-sdk==1.22.0
+
+# Logging
+structlog==24.1.0
+python-json-logger==2.0.7
+
+# Security
+cryptography==41.0.7
+pyjwt==2.8.0
+passlib[bcrypt]==1.7.4
+
+# Utilities
+python-dotenv==1.0.0
+tenacity==8.2.3
+backoff==2.2.1
+cachetools==5.3.2

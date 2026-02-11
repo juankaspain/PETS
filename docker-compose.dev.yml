@@ -1,1 +1,43 @@
-# TODO: Development overrides
+version: '3.8'
+
+services:
+  timescaledb:
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_HOST_AUTH_METHOD=trust
+    volumes:
+      - ./data/dev/postgres:/var/lib/postgresql/data
+
+  redis:
+    ports:
+      - "6379:6379"
+    command: redis-server --appendonly no
+    volumes:
+      - ./data/dev/redis:/data
+
+  api:
+    build:
+      context: .
+      dockerfile: infra/docker/Dockerfile.api
+      target: development
+    environment:
+      - LOG_LEVEL=DEBUG
+      - ENVIRONMENT=development
+      - RELOAD=true
+    volumes:
+      - ./src:/app/src
+      - ./config:/app/config
+      - ./tests:/app/tests
+    command: uvicorn src.presentation.api.main:app --reload --host 0.0.0.0 --port 8000
+
+  dashboard:
+    build:
+      context: .
+      dockerfile: infra/docker/Dockerfile.dashboard
+      target: development
+    volumes:
+      - ./src/presentation/dashboard:/app/dashboard
+    environment:
+      - STREAMLIT_SERVER_ENABLE_STATIC_SERVING=true
+      - STREAMLIT_SERVER_HEADLESS=true

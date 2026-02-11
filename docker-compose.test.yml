@@ -1,1 +1,42 @@
-# TODO: Testing environment
+version: '3.8'
+
+services:
+  timescaledb_test:
+    image: timescale/timescaledb:latest-pg16
+    container_name: pets_timescaledb_test
+    environment:
+      POSTGRES_DB: pets_test
+      POSTGRES_USER: pets_test
+      POSTGRES_PASSWORD: test_password
+      TIMESCALEDB_TELEMETRY: off
+    ports:
+      - "5433:5432"
+    tmpfs:
+      - /var/lib/postgresql/data
+    command: postgres -c fsync=off -c synchronous_commit=off -c full_page_writes=off
+
+  redis_test:
+    image: redis:7.2-alpine
+    container_name: pets_redis_test
+    command: redis-server --save ""
+    ports:
+      - "6380:6379"
+    tmpfs:
+      - /data
+
+  test_runner:
+    build:
+      context: .
+      dockerfile: infra/docker/Dockerfile.test
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://pets_test:test_password@timescaledb_test:5432/pets_test
+      - REDIS_URL=redis://redis_test:6379/0
+      - PYTHONPATH=/app/src
+    volumes:
+      - ./src:/app/src:ro
+      - ./tests:/app/tests:ro
+      - ./coverage:/app/coverage
+    depends_on:
+      - timescaledb_test
+      - redis_test
+    command: pytest tests/ -v --cov=src --cov-report=html --cov-report=term

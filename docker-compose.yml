@@ -1,1 +1,341 @@
-# TODO: Production orchestration
+version: '3.8'
+
+services:
+  # Database Layer
+  timescaledb:
+    image: timescale/timescaledb:latest-pg16
+    container_name: pets_timescaledb
+    environment:
+      POSTGRES_DB: pets
+      POSTGRES_USER: pets_user
+      POSTGRES_PASSWORD: ${TIMESCALE_PASSWORD}
+      TIMESCALEDB_TELEMETRY: off
+    ports:
+      - "5432:5432"
+    volumes:
+      - timescaledb_data:/var/lib/postgresql/data
+      - ./infra/timescale/init.sql:/docker-entrypoint-initdb.d/init.sql
+    command: postgres -c shared_preload_libraries=timescaledb -c max_connections=200
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U pets_user -d pets"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - pets_network
+
+  redis:
+    image: redis:7.2-alpine
+    container_name: pets_redis
+    command: redis-server --appendonly yes --maxmemory 2gb --maxmemory-policy allkeys-lru
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - pets_network
+
+  # API Layer
+  api:
+    build:
+      context: .
+      dockerfile: infra/docker/Dockerfile.api
+    container_name: pets_api
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://pets_user:${TIMESCALE_PASSWORD}@timescaledb:5432/pets
+      - REDIS_URL=redis://redis:6379/0
+      - LOG_LEVEL=INFO
+      - ENVIRONMENT=production
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./src:/app/src:ro
+      - ./config:/app/config:ro
+    depends_on:
+      timescaledb:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/v1/health/live"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
+    networks:
+      - pets_network
+
+  # Dashboard
+  dashboard:
+    build:
+      context: .
+      dockerfile: infra/docker/Dockerfile.dashboard
+    container_name: pets_dashboard
+    environment:
+      - API_URL=http://api:8000
+      - STREAMLIT_SERVER_PORT=8501
+      - STREAMLIT_SERVER_ADDRESS=0.0.0.0
+    ports:
+      - "8501:8501"
+    volumes:
+      - ./src/presentation/dashboard:/app/dashboard:ro
+    depends_on:
+      - api
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8501/_stcore/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
+    networks:
+      - pets_network
+
+  # Bot Orchestrator
+  bot_orchestrator:
+    build:
+      context: .
+      dockerfile: infra/docker/Dockerfile.bots
+    container_name: pets_bot_orchestrator
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://pets_user:${TIMESCALE_PASSWORD}@timescaledb:5432/pets
+      - REDIS_URL=redis://redis:6379/0
+      - WALLET_PRIVATE_KEY=${WALLET_PRIVATE_KEY}
+      - POLYMARKET_API_KEY=${POLYMARKET_API_KEY}
+      - POLYMARKET_SECRET=${POLYMARKET_SECRET}
+      - POLYGON_RPC_URL=${POLYGON_RPC_URL}
+      - LOG_LEVEL=INFO
+    volumes:
+      - ./src:/app/src:ro
+      - ./config:/app/config:ro
+      - wallet_data:/app/wallet:ro
+    depends_on:
+      timescaledb:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - pets_network
+
+  # Individual Bots (Bot 8 priority)
+  bot_08:
+    build:
+      context: .
+      dockerfile: infra/docker/Dockerfile.bots
+    container_name: pets_bot_08
+    environment:
+      - BOT_ID=8
+      - DATABASE_URL=postgresql+asyncpg://pets_user:${TIMESCALE_PASSWORD}@timescaledb:5432/pets
+      - REDIS_URL=redis://redis:6379/0
+      - WALLET_PRIVATE_KEY=${WALLET_PRIVATE_KEY}
+      - POLYMARKET_API_KEY=${POLYMARKET_API_KEY}
+      - POLYMARKET_SECRET=${POLYMARKET_SECRET}
+      - POLYGON_RPC_URL=${POLYGON_RPC_URL}
+    volumes:
+      - ./src:/app/src:ro
+      - ./config/bots/bot_08.yaml:/app/config/bot.yaml:ro
+    depends_on:
+      - bot_orchestrator
+    restart: unless-stopped
+    networks:
+      - pets_network
+
+  # WebSocket Gateway
+  websocket_gateway:
+    build:
+      context: .
+      dockerfile: infra/docker/Dockerfile.websocket
+    container_name: pets_websocket_gateway
+    environment:
+      - REDIS_URL=redis://redis:6379/0
+      - POLYMARKET_WS_URL=wss://ws-subscriptions-clob.polymarket.com/ws
+    ports:
+      - "8765:8765"
+    depends_on:
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "nc", "-z", "localhost", "8765"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+    restart: unless-stopped
+    networks:
+      - pets_network
+
+  # Market Data Processor
+  market_data_processor:
+    build:
+      context: .
+      dockerfile: infra/docker/Dockerfile.processor
+    container_name: pets_market_data_processor
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://pets_user:${TIMESCALE_PASSWORD}@timescaledb:5432/pets
+      - REDIS_URL=redis://redis:6379/0
+      - POLYMARKET_API_KEY=${POLYMARKET_API_KEY}
+    volumes:
+      - ./src:/app/src:ro
+    depends_on:
+      timescaledb:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      websocket_gateway:
+        condition: service_started
+    restart: unless-stopped
+    networks:
+      - pets_network
+
+  # Monitoring Layer
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: pets_prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--storage.tsdb.retention.time=90d'
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./infra/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    depends_on:
+      - api
+    restart: unless-stopped
+    networks:
+      - pets_network
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: pets_grafana
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD}
+      - GF_USERS_ALLOW_SIGN_UP=false
+      - GF_SERVER_ROOT_URL=http://localhost:3000
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./infra/grafana/dashboards:/etc/grafana/provisioning/dashboards:ro
+      - ./infra/grafana/datasources:/etc/grafana/provisioning/datasources:ro
+      - grafana_data:/var/lib/grafana
+    depends_on:
+      - prometheus
+    restart: unless-stopped
+    networks:
+      - pets_network
+
+  # Alertmanager
+  alertmanager:
+    image: prom/alertmanager:latest
+    container_name: pets_alertmanager
+    command:
+      - '--config.file=/etc/alertmanager/alertmanager.yml'
+    ports:
+      - "9093:9093"
+    volumes:
+      - ./infra/alertmanager/alertmanager.yml:/etc/alertmanager/alertmanager.yml:ro
+      - alertmanager_data:/alertmanager
+    restart: unless-stopped
+    networks:
+      - pets_network
+
+  # Node Exporter
+  node_exporter:
+    image: prom/node-exporter:latest
+    container_name: pets_node_exporter
+    command:
+      - '--path.procfs=/host/proc'
+      - '--path.sysfs=/host/sys'
+      - '--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)'
+    ports:
+      - "9100:9100"
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+    restart: unless-stopped
+    networks:
+      - pets_network
+
+  # Postgres Exporter
+  postgres_exporter:
+    image: prometheuscommunity/postgres-exporter:latest
+    container_name: pets_postgres_exporter
+    environment:
+      - DATA_SOURCE_NAME=postgresql://pets_user:${TIMESCALE_PASSWORD}@timescaledb:5432/pets?sslmode=disable
+    ports:
+      - "9187:9187"
+    depends_on:
+      - timescaledb
+    restart: unless-stopped
+    networks:
+      - pets_network
+
+  # Redis Exporter
+  redis_exporter:
+    image: oliver006/redis_exporter:latest
+    container_name: pets_redis_exporter
+    environment:
+      - REDIS_ADDR=redis://redis:6379
+    ports:
+      - "9121:9121"
+    depends_on:
+      - redis
+    restart: unless-stopped
+    networks:
+      - pets_network
+
+  # Backup Service
+  backup:
+    build:
+      context: .
+      dockerfile: infra/docker/Dockerfile.backup
+    container_name: pets_backup
+    environment:
+      - DATABASE_URL=postgresql://pets_user:${TIMESCALE_PASSWORD}@timescaledb:5432/pets
+      - BACKUP_SCHEDULE=0 2 * * *
+      - BACKUP_RETENTION_DAYS=30
+    volumes:
+      - ./data/backups:/backups
+      - ./scripts/backup:/scripts:ro
+    depends_on:
+      - timescaledb
+    restart: unless-stopped
+    networks:
+      - pets_network
+
+  # Migration Runner
+  migration:
+    build:
+      context: .
+      dockerfile: infra/docker/Dockerfile.migration
+    container_name: pets_migration
+    environment:
+      - DATABASE_URL=postgresql://pets_user:${TIMESCALE_PASSWORD}@timescaledb:5432/pets
+    volumes:
+      - ./src/infrastructure/persistence/migrations:/app/migrations:ro
+    depends_on:
+      timescaledb:
+        condition: service_healthy
+    command: alembic upgrade head
+    networks:
+      - pets_network
+
+volumes:
+  timescaledb_data:
+  redis_data:
+  prometheus_data:
+  grafana_data:
+  alertmanager_data:
+  wallet_data:
+
+networks:
+  pets_network:
+    driver: bridge
