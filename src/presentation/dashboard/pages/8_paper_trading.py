@@ -1,7 +1,6 @@
 """Paper Trading page."""
 
 import streamlit as st
-from datetime import datetime, timedelta
 
 from src.presentation.dashboard.components.api_client import APIClient
 
@@ -10,342 +9,196 @@ st.set_page_config(page_title="Paper Trading", page_icon="🧪", layout="wide")
 st.title("🧪 Paper Trading")
 
 st.markdown("""
-Test Bot 8 strategy without real money. Validate performance before production.
+Test Bot 8 Volatility Skew strategy with simulated capital before going live.
+
+**Zero Risk Testing:**
+- Virtual $10K starting balance
+- Real market data, simulated execution
+- Track paper P&L and performance
+- Validate strategy without risk
 """)
+
+st.markdown("---")
 
 # API client
 api_base_url = st.session_state.get("api_base_url", "http://localhost:8000")
 client = APIClient(api_base_url)
 
-st.markdown("---")
+# Fetch paper wallet
+try:
+    wallet = client.get_paper_wallet()
+    metrics = client.get_paper_metrics()
+    positions = client.get_paper_positions()
+except Exception as e:
+    st.error(f"Failed to fetch paper trading data: {e}")
+    st.stop()
 
-# Paper Trading Session
-st.subheader("🔋 Paper Trading Session")
+# Wallet Overview
+st.subheader("💰 Paper Wallet")
 
-col1, col2 = st.columns([2, 1])
+col1, col2, col3, col4 = st.columns(4)
 
 with col1:
-    if "paper_session_id" not in st.session_state:
-        # Not started - show start form
-        with st.form("start_paper_trading"):
-            initial_balance = st.number_input(
-                "Initial Balance ($)",
-                min_value=1000,
-                max_value=100000,
-                value=10000,
-                step=1000,
-            )
-            
-            st.markdown("**Bot 8 Configuration:**")
-            spread_threshold = st.slider("Spread Threshold", 0.10, 0.30, 0.15, 0.01)
-            entry_low = st.slider("Entry Threshold (Low)", 0.05, 0.30, 0.20, 0.01)
-            
-            if st.form_submit_button("▶️ Start Paper Trading"):
-                try:
-                    # Start paper trading
-                    response = client._request(
-                        "POST",
-                        "/api/paper-trading/start",
-                        json={
-                            "initial_balance": initial_balance,
-                            "strategy_config": {
-                                "spread_threshold": spread_threshold,
-                                "entry_threshold_low": entry_low,
-                                "entry_threshold_high": 1.0 - entry_low,
-                                "hold_hours_min": 24,
-                                "hold_hours_max": 48,
-                                "target_delta": 0.30,
-                                "stop_loss_pct": 0.10,
-                            },
-                        },
-                    )
-                    
-                    st.session_state["paper_session_id"] = response["session_id"]
-                    st.success("Paper trading session started!")
-                    st.rerun()
-                except Exception as e:
-                    st.error(f"Failed to start paper trading: {e}")
+    st.metric(
+        "Total Value",
+        f"${wallet['total_value']:,.2f}",
+        delta=f"${wallet['total_return']:,.2f} ({wallet['total_return_pct']:.2f}%)",
+    )
+
+with col2:
+    st.metric(
+        "Cash Balance",
+        f"${wallet['balance']:,.2f}",
+    )
+
+with col3:
+    st.metric(
+        "Realized P&L",
+        f"${wallet['realized_pnl']:,.2f}",
+    )
+
+with col4:
+    st.metric(
+        "Unrealized P&L",
+        f"${wallet['unrealized_pnl']:,.2f}",
+    )
+
+st.markdown("---")
+
+# Performance Metrics
+st.subheader("📈 Performance Metrics")
+
+col1, col2, col3, col4 = st.columns(4)
+
+with col1:
+    st.metric(
+        "Total Trades",
+        wallet['total_trades'],
+    )
+
+with col2:
+    st.metric(
+        "Win Rate",
+        f"{wallet['win_rate']:.1f}%",
+        delta=f"{wallet['winning_trades']}W / {wallet['losing_trades']}L",
+    )
+
+with col3:
+    st.metric(
+        "Profit Factor",
+        f"{metrics['profit_factor']:.2f}",
+    )
+
+with col4:
+    if metrics['avg_win'] > 0:
+        st.metric(
+            "Avg Win / Loss",
+            f"${metrics['avg_win']:.2f} / ${metrics['avg_loss']:.2f}",
+        )
     else:
-        # Started - show status
+        st.metric("Avg Win / Loss", "N/A")
+
+st.markdown("---")
+
+# Positions
+st.subheader("💼 Paper Positions")
+
+tab1, tab2 = st.tabs(["📈 Open Positions", "📊 Closed Positions"])
+
+with tab1:
+    open_positions = [pos for pos in positions if pos['is_open']]
+    
+    if open_positions:
+        st.dataframe(
+            [
+                {
+                    "Market": pos["market_id"][:16] + "...",
+                    "Side": pos["side"],
+                    "Size": f"${pos['size']:,.0f}",
+                    "Entry": f"{pos['entry_price']:.4f}",
+                    "Current": f"{pos['current_price']:.4f}" if pos['current_price'] else "N/A",
+                    "Unrealized P&L": f"${pos['unrealized_pnl']:,.2f}" if pos['unrealized_pnl'] else "N/A",
+                    "Zone": f"Z{pos['zone']}",
+                }
+                for pos in open_positions
+            ],
+            use_container_width=True,
+        )
+    else:
+        st.info("No open paper positions")
+
+with tab2:
+    closed_positions = [pos for pos in positions if not pos['is_open']]
+    
+    if closed_positions:
+        st.dataframe(
+            [
+                {
+                    "Market": pos["market_id"][:16] + "...",
+                    "Side": pos["side"],
+                    "Size": f"${pos['size']:,.0f}",
+                    "Entry": f"{pos['entry_price']:.4f}",
+                    "Exit": f"{pos['exit_price']:.4f}" if pos['exit_price'] else "N/A",
+                    "Realized P&L": f"${pos['realized_pnl']:,.2f}" if pos['realized_pnl'] else "N/A",
+                    "P&L %": f"{(pos['realized_pnl']/pos['size']*100):.2f}%" if pos['realized_pnl'] and pos['size'] else "N/A",
+                    "Zone": f"Z{pos['zone']}",
+                }
+                for pos in closed_positions
+            ],
+            use_container_width=True,
+        )
+    else:
+        st.info("No closed paper positions yet")
+
+st.markdown("---")
+
+# Actions
+st.subheader("⚙️ Actions")
+
+col1, col2 = st.columns(2)
+
+with col1:
+    st.markdown("**Reset Paper Wallet**")
+    st.markdown("Clear all positions and reset balance to $10K")
+    
+    if st.button("🔄 Reset Wallet", type="primary"):
         try:
-            status = client._request(
-                "GET",
-                "/api/paper-trading/status",
-                params={"session_id": st.session_state["paper_session_id"]},
-            )
-            
-            st.success("✅ Paper Trading Active")
-            
-            # Metrics
-            col_a, col_b, col_c, col_d = st.columns(4)
-            
-            with col_a:
-                st.metric(
-                    "Balance",
-                    f"${status['current_balance']:,.2f}",
-                    delta=f"${status['total_pnl']:,.2f}",
-                )
-            
-            with col_b:
-                st.metric(
-                    "Return",
-                    f"{status['return_pct']:.2f}%",
-                )
-            
-            with col_c:
-                st.metric(
-                    "Trades",
-                    status['total_trades'],
-                    delta=f"{status['winning_trades']}W / {status['losing_trades']}L",
-                )
-            
-            with col_d:
-                st.metric(
-                    "Win Rate",
-                    f"{status['win_rate']*100:.1f}%",
-                )
-            
-            # Stop button
-            if st.button("⏸️ Stop Paper Trading"):
-                del st.session_state["paper_session_id"]
-                st.rerun()
-        
+            result = client.reset_paper_wallet()
+            st.success(f"✅ {result['message']}")
+            st.rerun()
         except Exception as e:
-            st.error(f"Failed to fetch status: {e}")
-            if st.button("Clear Session"):
-                del st.session_state["paper_session_id"]
-                st.rerun()
+            st.error(f"❌ Failed to reset wallet: {e}")
 
 with col2:
-    st.info("""
-    **Paper Trading**
-    
-    - No real money
-    - Virtual $10K balance
-    - Real market data
-    - Bot 8 strategy active
-    - Track performance
-    """)
-
-st.markdown("---")
-
-# Paper Trades
-if "paper_session_id" in st.session_state:
-    st.subheader("📊 Paper Trades")
-    
-    try:
-        trades = client._request(
-            "GET",
-            "/api/paper-trading/trades",
-            params={
-                "session_id": st.session_state["paper_session_id"],
-                "limit": 100,
-            },
-        )
-        
-        if trades:
-            st.dataframe(
-                [
-                    {
-                        "Market": trade["market_id"][:12] + "...",
-                        "Side": trade["side"],
-                        "Size": f"${trade['size']:,.0f}",
-                        "Entry": f"{trade['entry_price']:.4f}",
-                        "Exit": f"{trade['exit_price']:.4f}" if trade['exit_price'] else "N/A",
-                        "P&L": f"${trade['realized_pnl']:,.2f}" if trade['realized_pnl'] else "N/A",
-                        "Status": "🟢 Win" if trade['realized_pnl'] and trade['realized_pnl'] > 0 else "🔴 Loss" if trade['realized_pnl'] else "Open",
-                    }
-                    for trade in trades
-                ],
-                use_container_width=True,
-            )
-        else:
-            st.info("No paper trades yet. Waiting for Bot 8 signals...")
-    
-    except Exception as e:
-        st.error(f"Failed to fetch trades: {e}")
-
-st.markdown("---")
-
-# Backtest
-st.subheader("🔬 Backtest")
-
-st.markdown("""
-Run historical backtest to validate Bot 8 strategy performance.
-""")
-
-col1, col2 = st.columns([2, 1])
-
-with col1:
-    with st.form("run_backtest"):
-        st.markdown("**Backtest Parameters:**")
-        
-        col_a, col_b = st.columns(2)
-        
-        with col_a:
-            start_date = st.date_input(
-                "Start Date",
-                value=datetime.now() - timedelta(days=90),
-            )
-        
-        with col_b:
-            end_date = st.date_input(
-                "End Date",
-                value=datetime.now(),
-            )
-        
-        initial_balance = st.number_input(
-            "Initial Balance",
-            min_value=1000,
-            max_value=100000,
-            value=10000,
-            step=1000,
-        )
-        
-        if st.form_submit_button("🚀 Run Backtest"):
-            with st.spinner("Running backtest..."):
-                try:
-                    # Start backtest
-                    response = client._request(
-                        "POST",
-                        "/api/paper-trading/backtest",
-                        json={
-                            "start_date": start_date.isoformat(),
-                            "end_date": end_date.isoformat(),
-                            "initial_balance": initial_balance,
-                            "strategy_config": {},
-                        },
-                    )
-                    
-                    backtest_id = response["backtest_id"]
-                    
-                    # Get results
-                    result = client._request(
-                        "GET",
-                        f"/api/paper-trading/backtest/{backtest_id}",
-                    )
-                    
-                    st.session_state["backtest_result"] = result
-                    st.success("Backtest completed!")
-                    st.rerun()
-                
-                except Exception as e:
-                    st.error(f"Backtest failed: {e}")
-
-with col2:
-    st.info("""
-    **Backtest**
-    
-    - Historical data
-    - Bot 8 strategy
-    - Performance metrics
-    - Validate parameters
-    """)
-
-# Backtest Results
-if "backtest_result" in st.session_state:
-    st.markdown("---")
-    st.subheader("📈 Backtest Results")
-    
-    result = st.session_state["backtest_result"]
-    
-    # Key Metrics
-    col1, col2, col3, col4, col5 = st.columns(5)
-    
-    with col1:
-        st.metric(
-            "Total Return",
-            f"{result['return_pct']:.2f}%",
-            delta=f"${result['total_pnl']:,.2f}",
-        )
-    
-    with col2:
-        st.metric(
-            "Win Rate",
-            f"{result['win_rate']*100:.1f}%",
-            delta=f"{result['winning_trades']}W / {result['losing_trades']}L",
-        )
-    
-    with col3:
-        st.metric(
-            "Profit Factor",
-            f"{result['profit_factor']:.2f}",
-        )
-    
-    with col4:
-        st.metric(
-            "Sharpe Ratio",
-            f"{result['sharpe_ratio']:.2f}" if result['sharpe_ratio'] else "N/A",
-        )
-    
-    with col5:
-        st.metric(
-            "Max Drawdown",
-            f"{result['max_drawdown_pct']:.2f}%",
-        )
-    
-    st.markdown("---")
-    
-    # Validation Checklist
-    st.subheader("✅ Validation Checklist")
-    
-    criteria = [
-        {
-            "name": "100+ Trades",
-            "target": 100,
-            "actual": result['total_trades'],
-            "passed": result['total_trades'] >= 100,
-        },
-        {
-            "name": "Win Rate ≥60%",
-            "target": 0.60,
-            "actual": result['win_rate'],
-            "passed": result['win_rate'] >= 0.60,
-        },
-        {
-            "name": "Profit Factor ≥1.5",
-            "target": 1.5,
-            "actual": result['profit_factor'],
-            "passed": result['profit_factor'] >= 1.5,
-        },
-        {
-            "name": "Max Drawdown ≤15%",
-            "target": 15,
-            "actual": result['max_drawdown_pct'],
-            "passed": result['max_drawdown_pct'] <= 15,
-        },
-    ]
-    
-    if result['sharpe_ratio']:
-        criteria.append({
-            "name": "Sharpe Ratio ≥1.0",
-            "target": 1.0,
-            "actual": result['sharpe_ratio'],
-            "passed": result['sharpe_ratio'] >= 1.0,
-        })
-    
-    for criterion in criteria:
-        col1, col2, col3 = st.columns([2, 1, 1])
-        
-        with col1:
-            st.write(criterion["name"])
-        
-        with col2:
-            st.write(f"Target: {criterion['target']}")
-        
-        with col3:
-            status = "✅ PASS" if criterion["passed"] else "❌ FAIL"
-            st.write(f"{status} ({criterion['actual']:.2f})")
-    
-    # Overall validation
-    all_passed = all(c["passed"] for c in criteria)
-    
-    if all_passed:
-        st.success("🎉 **ALL CRITERIA PASSED** - Ready for production!")
+    st.markdown("**Paper Trading Status**")
+    if wallet['total_trades'] > 0:
+        st.success("🟢 Active - Testing Bot 8 strategy")
     else:
-        st.warning("⚠️ Some criteria not met. Review strategy parameters.")
-    
-    # Clear button
-    if st.button("Clear Backtest Results"):
-        del st.session_state["backtest_result"]
-        st.rerun()
+        st.info("🟡 Ready - Start paper trading to test Bot 8")
+
+st.markdown("---")
+
+# Info
+st.info("""
+**How Paper Trading Works:**
+
+1. **Virtual Capital**: Start with $10K simulated balance
+2. **Real Market Data**: Monitor live Polymarket prices
+3. **Simulated Execution**: Orders filled based on market prices
+4. **Zero Risk**: No real money, no blockchain transactions
+5. **Track Performance**: Monitor win rate, profit factor, P&L
+6. **Validate Strategy**: Prove Bot 8 works before going live
+
+**Bot 8 Strategy:**
+- Entry: Buy YES <0.20 OR expensive NO >0.80 when spread >15%
+- Hold: 24-48h for mean reversion
+- Exit: 0.25-0.35 delta improvement OR 10% stop-loss
+- Position Sizing: Half Kelly with 65% win probability
+- Risk Management: Circuit breakers active
+
+**Target Performance:**
+- Win Rate: ≥60% (evidence: 65%)
+- Profit Factor: ≥1.5
+- Max Drawdown: ≤15%
+- Sharpe Ratio: ≥1.0
+""")
