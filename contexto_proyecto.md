@@ -383,16 +383,14 @@ Bot 8 paper mode, win rate >52%, Sharpe >0.8, drawdown <15%
 $500-1K capital, Bot 8 solo, monitoreo 24/7, si exitoso → $5K + Bot 5
 **ETA**: 2-3 semanas → COMPLETADO
 
-### Fase 8: ⏳ Testing (ACTUAL - 2 SEMANAS)
+### Fase 8: ✅ Testing (COMPLETADO)
 - Unit tests: pytest setup, domain layer tests ≥85%
 - Integration tests: Infrastructure layer tests ≥80%
 - E2E tests: Bot 8 full flow simulation
 - Load tests: Market data processing, order execution
 - Coverage: Overall project ≥85%
-**ETA**: 60h (2 semanas)
-**Razón**: Asegurar robustez antes de ampliar bots
-
-### Fase 9: ⏳ Bot 5 Market Making (3 SEMANAS)
+**ETA**: 60h (2 semanas) → COMPLETADO
+**Razón**: Asegurar robustez antes de ampliar bots### Fase 9: ⏳ Bot 5 Market Making (3 SEMANAS)
 Bot 5 con Half Kelly, spread optimization, inventory management
 **ETA**: 3 semanas
 
