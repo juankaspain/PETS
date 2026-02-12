@@ -1,0 +1,29 @@
+# Bot 1: Portfolio Rebalancing Configuration
+bot_id: 1
+strategy_type: "rebalancer"
+enabled: true
+
+# Capital allocation (manages ALL portfolio)
+capital_allocated: 50000  # $50K total portfolio
+rebalance_interval: 3600  # 1h check
+
+# Target allocations (by bot performance)
+target_allocations:
+  bot_05: 0.15  # 15% Market Making
+  bot_08: 0.20  # 20% Tail Risk (proven)
+  bot_09: 0.15  # 15% Advanced Kelly
+  bot_10: 0.10  # 10% Long-term
+  bot_03: 0.10  # 10% Copy Trading
+  bot_04: 0.10  # 10% News-driven
+  bot_06: 0.10  # 10% Multi-outcome
+  bot_07: 0.05  # 5% Contrarian
+  bot_02: 0.05  # 5% Esports
+
+# Rebalance triggers
+drift_threshold_pct: 10.0  # Rebalance if >10% drift
+performance_lookback_days: 30
+sharpe_threshold: 0.5  # Reduce allocation if Sharpe <0.5
+
+# Risk management
+min_allocation_pct: 2.0  # Minimum 2% per bot
+max_allocation_pct: 25.0  # Maximum 25% per bot

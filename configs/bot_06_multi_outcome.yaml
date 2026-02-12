@@ -1,0 +1,29 @@
+# Bot 6: Multi-outcome Configuration
+bot_id: 6
+strategy_type: "multi_outcome"
+enabled: true
+
+# Capital allocation
+capital_allocated: 5000  # $5K (10% portfolio)
+max_positions: 12  # Can hold multiple outcomes
+cycle_interval: 15  # 15s cycles
+
+# Correlation parameters
+min_correlation: 0.50  # Detect correlated outcomes
+max_correlation: 0.95  # Avoid perfect correlation
+correlation_window_days: 7
+
+# Portfolio optimization
+hedge_ratio: 0.30  # Hedge 30% of exposure
+max_outcome_exposure: 0.40  # Max 40% in one outcome
+
+# Market filters
+min_outcomes: 2
+max_outcomes: 10
+min_liquidity_per_outcome: 2000
+target_zones: [2, 3]  # Balanced markets
+
+# Risk management
+max_drawdown_pct: 20.0
+kelly_fraction: 0.25
+post_only: true

@@ -1,0 +1,30 @@
+# Bot 3: Copy Trading Configuration
+bot_id: 3
+strategy_type: "copy_trading"
+enabled: true
+
+# Capital allocation
+capital_allocated: 5000  # $5K (10% portfolio)
+max_positions: 10
+cycle_interval: 60  # 1min (fast reaction)
+
+# Top traders to copy
+top_traders:
+  - address: "0xPlanktonXD"  # $106K proven
+    weight: 0.40
+  - address: "0xTopTrader2"
+    weight: 0.30
+  - address: "0xTopTrader3"
+    weight: 0.30
+
+# Copy parameters
+min_trader_pnl: 50000  # Copy only >$50K PnL
+min_trader_winrate: 55.0  # >55% win rate
+max_position_size_pct: 15.0  # Max 15% per copied position
+copy_delay_seconds: 5  # 5s delay for validation
+
+# Risk management
+max_leverage_copy: 1.5  # Don't copy >1.5x leverage
+max_drawdown_pct: 20.0
+stop_loss_pct: 10.0
+post_only: true

@@ -1,0 +1,33 @@
+# Bot 10: Long-term Holder Configuration
+bot_id: 10
+strategy_type: "longterm"
+enabled: true
+
+# Capital allocation
+capital_allocated: 5000  # $5K (10% portfolio)
+max_positions: 5  # Few high-conviction
+cycle_interval: 7200  # 2h (very slow)
+
+# Time horizon
+min_resolution_days: 30  # >30 days to resolve
+max_resolution_days: 365  # <1 year
+target_hold_days: 60  # 60 day avg hold
+
+# Fundamental analysis
+fundamental_score_min: 70  # Strong fundamentals
+conviction_threshold: 0.75  # High conviction
+research_sources:
+  - "news_analysis"
+  - "expert_predictions"
+  - "historical_patterns"
+
+# Market filters
+min_liquidity: 10000  # Higher liquidity
+target_zones: [1, 2]  # Conviction plays
+turnover_target_monthly: 2  # <2 trades/month
+
+# Risk management
+max_drawdown_pct: 30.0  # Patient tolerance
+kelly_fraction: 0.33  # Third Kelly
+stop_loss_pct: 20.0  # Wide stops
+post_only: true

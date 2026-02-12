@@ -1,0 +1,41 @@
+# Bot 9: Advanced Kelly Configuration
+bot_id: 9
+strategy_type: "advanced_kelly"
+enabled: true
+
+# Capital allocation
+capital_allocated: 7500  # $7.5K (15% portfolio)
+max_positions: 8
+cycle_interval: 10  # 10s cycles
+
+# Kelly parameters
+base_kelly_fraction: 0.25  # Quarter Kelly base
+min_kelly: 0.15  # Minimum viable
+max_kelly: 0.50  # Half Kelly ceiling
+
+# Edge requirements
+min_edge_pct: 5.0  # 5% minimum edge
+min_confidence: 60.0  # 60% confidence minimum
+
+# Timeframes for analysis
+timeframes:
+  - "1h"
+  - "4h"
+  - "24h"
+
+# Portfolio optimization
+max_correlation: 0.70
+volatility_scaling: true
+
+# Market filters
+min_liquidity: 5000
+target_zones: [1, 2, 3]
+
+# Risk management
+max_drawdown_pct: 20.0
+max_daily_loss_pct: 4.0
+consecutive_loss_limit: 3
+
+# Order settings
+post_only: true
+max_slippage_pct: 0.3

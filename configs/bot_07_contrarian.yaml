@@ -1,0 +1,30 @@
+# Bot 7: Contrarian Configuration
+bot_id: 7
+strategy_type: "contrarian"
+enabled: true
+
+# Capital allocation
+capital_allocated: 2500  # $2.5K (5% portfolio)
+max_positions: 6
+cycle_interval: 20  # 20s cycles
+
+# Momentum detection
+rsi_period: 14
+rsi_overbought: 75
+rsi_oversold: 25
+price_acceleration_threshold: 0.10  # 10% rapid move
+
+# Mean reversion
+mean_reversion_window_hours: 24
+std_dev_threshold: 2.0  # 2 std dev extremes
+
+# Market filters
+min_liquidity: 3000
+target_zones: [1, 2]  # Extreme zones for reversion
+max_crowd_score: 80  # Fade highly crowded
+
+# Risk management
+max_drawdown_pct: 25.0  # Higher tolerance
+kelly_fraction: 0.20  # Conservative
+hold_period_hours: 12  # 12h mean reversion
+post_only: true

@@ -1,0 +1,35 @@
+# Bot 2: Esports Specialist Configuration
+bot_id: 2
+strategy_type: "esports"
+enabled: true
+
+# Capital allocation
+capital_allocated: 2500  # $2.5K (5% portfolio)
+max_positions: 5
+cycle_interval: 300  # 5min (slower, research-intensive)
+
+# API integrations
+apis:
+  riot_games: true
+  steam: true
+  abios: true
+  pandascore: true
+
+# Analysis parameters
+historical_matches_lookback: 50
+team_form_window_days: 30
+h2h_matches_required: 3
+
+# Market filters
+games_supported:
+  - "League of Legends"
+  - "CS:GO"
+  - "Dota 2"
+  - "Valorant"
+min_liquidity: 2000
+target_zones: [1, 2]  # Underdog value
+
+# Risk management
+max_drawdown_pct: 20.0
+kelly_fraction: 0.25
+post_only: true

@@ -1,0 +1,34 @@
+# Bot 4: News-driven Configuration
+bot_id: 4
+strategy_type: "news_driven"
+enabled: true
+
+# Capital allocation
+capital_allocated: 5000  # $5K (10% portfolio)
+max_positions: 8
+cycle_interval: 30  # 30s (fast news reaction)
+
+# News sources
+sources:
+  - "NewsAPI"
+  - "Bloomberg"
+  - "Reuters"
+  - "Twitter"
+  - "Reddit"
+
+# NLP parameters
+sentiment_model: "finbert"  # Financial BERT
+sentiment_threshold: 0.65  # High confidence
+relevance_threshold: 0.70
+news_window_minutes: 60  # 1h lookback
+
+# Market filters
+min_liquidity: 3000
+target_zones: [1, 2, 3]
+reaction_window_minutes: 240  # 4h position hold
+
+# Risk management
+max_drawdown_pct: 20.0
+kelly_fraction: 0.25
+max_news_positions: 3  # Max 3 simultaneous news trades
+post_only: true
