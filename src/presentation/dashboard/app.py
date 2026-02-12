@@ -25,6 +25,7 @@ page = st.sidebar.radio(
         "🏪 Markets",
         "⚠️ Risk",
         "📈 Analytics",
+        "🧪 Paper Trading",
         "⚙️ Settings",
     ],
 )
@@ -138,6 +139,31 @@ elif page == "📈 Analytics":
     """)
     
     st.info("Analytics page - See pages/6_analytics.py for full implementation")
+
+elif page == "🧪 Paper Trading":
+    st.markdown("""
+    ### Paper Trading
+    
+    Test Bot 8 strategy with simulated capital before going live.
+    
+    **Features:**
+    - Virtual $10K starting balance
+    - Real market data, simulated execution
+    - Track paper P&L and performance
+    - Validate strategy without risk
+    - Compare with $106K evidence
+    """)
+    
+    st.info("🚧 Paper Trading page - Implementation in progress (Fase 6)")
+    
+    st.markdown("""
+    **Coming soon:**
+    - Paper wallet balance and positions
+    - Real-time Bot 8 signals
+    - Simulated trade execution
+    - Paper trading metrics
+    - Strategy validation dashboard
+    """)
 
 elif page == "⚙️ Settings":
     st.markdown("""
