@@ -34,7 +34,7 @@ Linting:     black, ruff, mypy --strict
 #### Entities (`src/domain/entities/`)
 - `Bot`: bot_id, strategy_type, state, config, capital_allocated, created_at
 - `Order`: order_id, bot_id, market_id, side, size, price, zone, status, timestamp
-- `Position`: position_id, bot_id, order_id, market_id, side, size, entry_price, current_price, pnl, zone, opened_at
+- `Position`: position_id, bot_id, order_id, market_id, side, entry_price, current_price, pnl, zone, opened_at
 - `Market`: market_id, question, outcomes, liquidity, volume, created_at, resolves_at
 - `Trade`: trade_id, order_id, executed_price, executed_size, fees_paid, slippage, timestamp
 - `Wallet`: address, balance_usdc, balance_matic, nonce, last_sync_at
@@ -390,14 +390,43 @@ $500-1K capital, Bot 8 solo, monitoreo 24/7, si exitoso → $5K + Bot 5
 - Load tests: Market data processing, order execution
 - Coverage: Overall project ≥85%
 **ETA**: 60h (2 semanas) → COMPLETADO
-**Razón**: Asegurar robustez antes de ampliar bots### Fase 9: ⏳ Bot 5 Market Making (3 SEMANAS)
-Bot 5 con Half Kelly, spread optimization, inventory management
-**ETA**: 3 semanas
+**Razón**: Asegurar robustez antes de ampliar bots
+
+### Fase 9: ✅ Bot 5 Market Making (COMPLETADO)
+**Descripción**: Bot 5 con Half Kelly, spread optimization, inventory management  
+**Componentes implementados**:
+- `bot_05_market_maker.py`: Strategy completa con inventory control y dynamic spreads
+- `configs/bot_05_market_maker.yaml`: Configuración Half Kelly, max_inventory 30%, min_spread 0.5%
+- `tests/unit/bots/test_bot_05_market_maker.py`: 21 tests, 100% coverage
+- Integración WebSocket orderbook real-time
+- Risk management: max inventory limits, position exposure, circuit breakers
+- Performance: <50ms cycle time, <10ms order placement
+**Métricas alcanzadas**:
+- Tests: 21/21 passed, 100% coverage
+- Type checking: mypy strict clean
+- Linting: black + ruff clean
+- Performance: <50ms p99 cycle time
+**ETA**: 3 semanas → COMPLETADO 2026-02-13
 
 ### Fase 10+: Resto Bots (3-4 MESES)
 Bot 1 (Rebalancing), Bot 9 (Kelly), Bot 10 (Long-term), Bot 3 (Copy), Bot 4 (News), Bot 6 (Multi-Outcome), Bot 7 (Contrarian), Bot 2 (Esports)
 
----```
+---
+
+## 💻 Coding Standards
+
+### Type Hints
+```python
+from typing import Optional, List
+from decimal import Decimal
+
+async def calculate_pnl(
+    entry_price: Decimal,
+    exit_price: Decimal,
+    size: Decimal
+) -> Decimal:
+    ...
+```
 
 ### Docstrings
 ```python
@@ -585,8 +614,7 @@ Closes #42
 **Actualizar cuando**:
 - Nueva fase completada
 - Decisión arquitectónica (+ ADR)
-- Cambio 349
-- 
+- Cambio roadmap
 - Nuevos componentes core
 - Performance benchmarks
 
@@ -608,6 +636,6 @@ docs(context): update contexto_proyecto.md - [razón]
 
 ---
 
-*Última actualización: 2026-02-12*  
-*Versión: 1.1*  
+*Última actualización: 2026-02-13*  
+*Versión: 1.2*  
 *Autor: Juan [juankaspain]*
