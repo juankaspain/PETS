@@ -7,7 +7,15 @@ from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
-from src.presentation.api.routes import analytics, bots, markets, orders, positions, paper
+from src.presentation.api.routes import (
+    analytics,
+    backtesting,
+    bots,
+    markets,
+    orders,
+    paper,
+    positions,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -93,6 +101,9 @@ app.include_router(positions.router, prefix="/api/positions", tags=["Positions"]
 app.include_router(markets.router, prefix="/api/markets", tags=["Markets"])
 app.include_router(analytics.router, prefix="/api/analytics", tags=["Analytics"])
 app.include_router(paper.router, prefix="/api/paper", tags=["Paper Trading"])
+app.include_router(
+    backtesting.router, prefix="/api/backtest", tags=["Backtesting"]
+)
 
 
 # Root endpoint

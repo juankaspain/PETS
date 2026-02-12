@@ -26,6 +26,7 @@ page = st.sidebar.radio(
         "⚠️ Risk",
         "📈 Analytics",
         "🧪 Paper Trading",
+        "📊 Backtesting",
         "⚙️ Settings",
     ],
 )
@@ -154,15 +155,40 @@ elif page == "🧪 Paper Trading":
     - Compare with $106K evidence
     """)
     
-    st.info("🚧 Paper Trading page - Implementation in progress (Fase 6)")
+    st.info("✅ Paper Trading page - See pages/8_paper_trading.py for full implementation")
     
     st.markdown("""
-    **Coming soon:**
+    **Features:**
     - Paper wallet balance and positions
     - Real-time Bot 8 signals
     - Simulated trade execution
     - Paper trading metrics
     - Strategy validation dashboard
+    """)
+
+elif page == "📊 Backtesting":
+    st.markdown("""
+    ### Backtesting
+    
+    Validate Bot 8 strategy on historical data before production.
+    
+    **Features:**
+    - Historical data replay
+    - Bot 8 strategy execution on past data
+    - Performance metrics calculation
+    - Compare with $106K evidence
+    - Parameter optimization
+    """)
+    
+    st.info("✅ Backtesting page - See pages/9_backtesting.py for full implementation")
+    
+    st.markdown("""
+    **Validation Process:**
+    - Run backtest on 90+ days historical data
+    - Calculate win rate, profit factor, Sharpe ratio
+    - Compare results with manual trading evidence
+    - Optimize parameters for best performance
+    - Confirm strategy viability before going live
     """)
 
 elif page == "⚙️ Settings":
