@@ -1,6 +1,7 @@
 """Market simulator for paper trading."""
 
 import logging
+import random
 from dataclasses import dataclass
 from datetime import datetime
 from decimal import Decimal
@@ -11,7 +12,7 @@ logger = logging.getLogger(__name__)
 
 @dataclass
 class MarketSnapshot:
-    """Market data snapshot."""
+    """Market snapshot at a point in time."""
 
     market_id: str
     timestamp: datetime
@@ -23,145 +24,169 @@ class MarketSnapshot:
 
 
 class MarketSimulator:
-    """Simulates market data for paper trading.
+    """Market simulator for generating synthetic market data.
 
-    Generates price feeds and market updates.
-    Can replay historical data or generate synthetic data.
+    Useful for testing when historical data is not available.
     """
 
-    def __init__(self):
-        """Initialize market simulator."""
-        self.markets: Dict[str, MarketSnapshot] = {}
-        self.price_history: Dict[str, list[tuple[datetime, Decimal]]] = {}
+    def __init__(self, seed: int | None = None):
+        """Initialize market simulator.
 
-        logger.info("Market simulator initialized")
+        Args:
+            seed: Random seed for reproducibility
+        """
+        if seed is not None:
+            random.seed(seed)
 
-    def add_market(
+    def generate_market_snapshot(
         self,
         market_id: str,
-        initial_yes_price: Decimal,
-        initial_no_price: Decimal,
-        liquidity: Decimal = Decimal("100000"),
-        volume_24h: Decimal = Decimal("50000"),
-    ) -> None:
-        """Add market to simulator.
+        base_price: Decimal = Decimal("0.50"),
+        volatility: Decimal = Decimal("0.05"),
+        liquidity: Decimal = Decimal("50000"),
+    ) -> MarketSnapshot:
+        """Generate synthetic market snapshot.
 
         Args:
             market_id: Market ID
-            initial_yes_price: Initial YES price
-            initial_no_price: Initial NO price
-            liquidity: Market liquidity
-            volume_24h: 24h volume
-        """
-        spread = abs(initial_yes_price - Decimal("0.5")) * 2
+            base_price: Base YES price (default 0.50)
+            volatility: Price volatility (default 0.05)
+            liquidity: Market liquidity (default $50K)
 
-        snapshot = MarketSnapshot(
+        Returns:
+            Market snapshot
+        """
+        # Random walk from base price
+        price_change = Decimal(str(random.gauss(0, float(volatility))))
+        yes_price = max(
+            Decimal("0.01"),
+            min(Decimal("0.99"), base_price + price_change),
+        )
+        no_price = Decimal("1.0") - yes_price
+
+        # Spread (bid-ask)
+        spread = Decimal(str(random.uniform(0.01, 0.05)))
+
+        # Volume
+        volume_24h = liquidity * Decimal(str(random.uniform(0.1, 0.5)))
+
+        return MarketSnapshot(
             market_id=market_id,
             timestamp=datetime.utcnow(),
-            yes_price=initial_yes_price,
-            no_price=initial_no_price,
+            yes_price=yes_price,
+            no_price=no_price,
             liquidity=liquidity,
             volume_24h=volume_24h,
             spread=spread,
         )
 
-        self.markets[market_id] = snapshot
-        self.price_history[market_id] = [(snapshot.timestamp, initial_yes_price)]
+    def generate_price_series(
+        self,
+        market_id: str,
+        start_price: Decimal,
+        num_points: int,
+        volatility: Decimal = Decimal("0.05"),
+    ) -> list[Decimal]:
+        """Generate price series using random walk.
+
+        Args:
+            market_id: Market ID
+            start_price: Starting price
+            num_points: Number of price points
+            volatility: Volatility parameter
+
+        Returns:
+            List of prices
+        """
+        prices = [start_price]
+        current_price = start_price
+
+        for _ in range(num_points - 1):
+            # Random walk
+            change = Decimal(str(random.gauss(0, float(volatility))))
+            current_price = max(
+                Decimal("0.01"),
+                min(Decimal("0.99"), current_price + change),
+            )
+            prices.append(current_price)
+
+        return prices
+
+    def simulate_bot8_opportunity(
+        self,
+        market_id: str,
+        entry_type: str = "cheap_yes",  # "cheap_yes" or "expensive_no"
+    ) -> list[MarketSnapshot]:
+        """Simulate Bot 8 trading opportunity.
+
+        Args:
+            market_id: Market ID
+            entry_type: Type of opportunity
+
+        Returns:
+            List of market snapshots showing opportunity and mean reversion
+        """
+        snapshots = []
+
+        if entry_type == "cheap_yes":
+            # Cheap YES (<0.20) with spread >15%
+            entry_price = Decimal("0.15")
+            spread = Decimal("0.20")  # 20% spread
+
+            # Generate mean reversion to ~0.40
+            prices = self.generate_price_series(
+                market_id=market_id,
+                start_price=entry_price,
+                num_points=48,  # 48 hours
+                volatility=Decimal("0.02"),
+            )
+
+            # Add upward drift for mean reversion
+            for i, price in enumerate(prices):
+                drift = Decimal(str(i)) * Decimal("0.005")
+                prices[i] = min(Decimal("0.99"), price + drift)
+
+        else:  # expensive_no
+            # Expensive NO (>0.80) = Cheap YES (<0.20)
+            entry_price = Decimal("0.85")
+            spread = Decimal("0.25")
+
+            # Generate mean reversion to ~0.60
+            prices = self.generate_price_series(
+                market_id=market_id,
+                start_price=entry_price,
+                num_points=48,
+                volatility=Decimal("0.02"),
+            )
+
+            # Add downward drift
+            for i, price in enumerate(prices):
+                drift = Decimal(str(i)) * Decimal("0.005")
+                prices[i] = max(Decimal("0.01"), price - drift)
+
+        # Create snapshots
+        base_time = datetime.utcnow()
+        for i, price in enumerate(prices):
+            from datetime import timedelta
+            snapshot = MarketSnapshot(
+                market_id=market_id,
+                timestamp=base_time + timedelta(hours=i),
+                yes_price=price,
+                no_price=Decimal("1.0") - price,
+                liquidity=Decimal("50000"),
+                volume_24h=Decimal("10000"),
+                spread=spread,
+            )
+            snapshots.append(snapshot)
 
         logger.info(
-            "Market added",
+            "Simulated Bot 8 opportunity",
             extra={
                 "market_id": market_id,
-                "yes_price": float(initial_yes_price),
-                "no_price": float(initial_no_price),
-                "spread": float(spread),
+                "entry_type": entry_type,
+                "entry_price": float(entry_price),
+                "snapshots": len(snapshots),
             },
         )
 
-    def update_price(
-        self,
-        market_id: str,
-        new_yes_price: Decimal,
-    ) -> MarketSnapshot:
-        """Update market price.
-
-        Args:
-            market_id: Market ID
-            new_yes_price: New YES price
-
-        Returns:
-            Updated snapshot
-
-        Raises:
-            ValueError: If market not found
-        """
-        if market_id not in self.markets:
-            raise ValueError(f"Market {market_id} not found")
-
-        snapshot = self.markets[market_id]
-        snapshot.yes_price = new_yes_price
-        snapshot.no_price = Decimal("1.0") - new_yes_price
-        snapshot.spread = abs(new_yes_price - Decimal("0.5")) * 2
-        snapshot.timestamp = datetime.utcnow()
-
-        # Update history
-        self.price_history[market_id].append((snapshot.timestamp, new_yes_price))
-
-        logger.debug(
-            "Price updated",
-            extra={
-                "market_id": market_id,
-                "yes_price": float(new_yes_price),
-                "spread": float(snapshot.spread),
-            },
-        )
-
-        return snapshot
-
-    def get_current_price(self, market_id: str) -> Decimal:
-        """Get current price for market.
-
-        Args:
-            market_id: Market ID
-
-        Returns:
-            Current YES price
-
-        Raises:
-            ValueError: If market not found
-        """
-        if market_id not in self.markets:
-            raise ValueError(f"Market {market_id} not found")
-
-        return self.markets[market_id].yes_price
-
-    def get_snapshot(self, market_id: str) -> MarketSnapshot:
-        """Get market snapshot.
-
-        Args:
-            market_id: Market ID
-
-        Returns:
-            Market snapshot
-
-        Raises:
-            ValueError: If market not found
-        """
-        if market_id not in self.markets:
-            raise ValueError(f"Market {market_id} not found")
-
-        return self.markets[market_id]
-
-    def get_price_history(
-        self,
-        market_id: str,
-    ) -> list[tuple[datetime, Decimal]]:
-        """Get price history for market.
-
-        Args:
-            market_id: Market ID
-
-        Returns:
-            List of (timestamp, price) tuples
-        """
-        return self.price_history.get(market_id, [])
+        return snapshots

@@ -1,1 +1,1 @@
-"""Paper trading infrastructure."""
+"""Paper trading infrastructure for testing without real money."""
