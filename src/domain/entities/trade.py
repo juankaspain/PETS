@@ -1,98 +1,68 @@
-"""Trade entity - Executed trade record."""
+"""Trade entity - executed order."""
 
 from dataclasses import dataclass
 from datetime import datetime
 from decimal import Decimal
 from uuid import UUID
 
-from src.domain.exceptions import DomainError
-from src.domain.value_objects.identifiers import OrderId
 from src.domain.value_objects.price import Price
-from src.domain.value_objects.quantity import Quantity
+from src.domain.value_objects.size import Size
 
 
 @dataclass(frozen=True)
 class Trade:
-    """Executed trade entity.
+    """Trade entity.
 
-    Represents a single trade execution (order fill).
-    Multiple trades can result from one order.
+    Represents an executed trade with fees, slippage, and gas costs.
 
-    Attributes:
-        trade_id: Unique trade identifier (UUID)
-        order_id: Order that generated this trade
-        executed_price: Actual execution price
-        executed_size: Actual execution size
-        fees_paid_usdc: Trading fees paid in USDC
-        slippage_bps: Slippage in basis points (0.01% = 1 bps)
-        timestamp: Trade execution timestamp
-        exchange_trade_id: Exchange-assigned trade ID
+    Example:
+        >>> trade = Trade(
+        ...     trade_id=uuid4(),
+        ...     order_id=order_id,
+        ...     executed_price=Price(Decimal("0.55")),
+        ...     executed_size=Size(Decimal("1000")),
+        ...     fees_paid=Decimal("5.0"),
+        ...     slippage=Decimal("0.0"),  # Post-only = no slippage
+        ...     gas_cost_usdc=Decimal("0.5"),
+        ...     executed_at=datetime.now(),
+        ... )
     """
 
     trade_id: UUID
-    order_id: OrderId
+    order_id: UUID
     executed_price: Price
-    executed_size: Quantity
-    fees_paid_usdc: Decimal
-    slippage_bps: Decimal
-    timestamp: datetime
-    exchange_trade_id: str
+    executed_size: Size
+    fees_paid: Decimal
+    slippage: Decimal
+    gas_cost_usdc: Decimal
+    executed_at: datetime
 
     def __post_init__(self) -> None:
-        """Validate trade attributes.
+        """Validate trade."""
+        if self.fees_paid < Decimal("0"):
+            raise ValueError("fees_paid must be non-negative")
 
-        Raises:
-            DomainError: If validation fails
-        """
-        if self.fees_paid_usdc < Decimal("0"):
-            raise DomainError(f"Fees cannot be negative: {self.fees_paid_usdc}")
+        if self.gas_cost_usdc < Decimal("0"):
+            raise ValueError("gas_cost_usdc must be non-negative")
 
-        if not self.exchange_trade_id.strip():
-            raise DomainError("Exchange trade ID cannot be empty")
+        # Post-only orders should have zero slippage
+        if self.slippage != Decimal("0"):
+            raise ValueError("slippage must be 0 for post-only orders")
 
-    @property
-    def trade_value_usdc(self) -> Decimal:
-        """Calculate trade value in USDC.
+    def total_cost(self) -> Decimal:
+        """Calculate total trade cost (notional + fees + gas).
 
         Returns:
-            Trade value (size * price) in USDC
+            Total cost in USDC
         """
-        size_decimal = Decimal(str(self.executed_size.to_float()))
-        return size_decimal * self.executed_price.value
+        notional = self.executed_price.value * self.executed_size.value
+        return notional + self.fees_paid + self.gas_cost_usdc
 
-    @property
     def effective_price(self) -> Decimal:
         """Calculate effective price including fees.
 
         Returns:
-            Effective price (price + fees per unit)
+            Effective price per unit
         """
-        if self.executed_size.value == Decimal("0"):
-            return self.executed_price.value
-
-        fees_per_unit = self.fees_paid_usdc / self.executed_size.value
-        return self.executed_price.value + fees_per_unit
-
-    @property
-    def slippage_percentage(self) -> float:
-        """Convert slippage from bps to percentage.
-
-        Returns:
-            Slippage as decimal (e.g., 0.001 for 0.1%)
-        """
-        return float(self.slippage_bps / Decimal("10000"))
-
-    def __str__(self) -> str:
-        """String representation."""
-        return (
-            f"Trade {self.trade_id}: {self.executed_size} @ {self.executed_price} "
-            f"(fees: {self.fees_paid_usdc:.2f} USDC, slippage: {self.slippage_bps} bps)"
-        )
-
-    def __repr__(self) -> str:
-        """Developer representation."""
-        return (
-            f"Trade(trade_id={self.trade_id}, order_id={self.order_id}, "
-            f"executed_price={self.executed_price}, "
-            f"executed_size={self.executed_size})"
-        )
+        total = self.total_cost()
+        return total / self.executed_size.value

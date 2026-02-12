@@ -1,14 +1,9 @@
-"""Domain layer - Core business logic and rules.
+"""Domain layer - business logic and entities.
 
-This layer contains:
-- Entities: Core business objects with identity
-- Value Objects: Immutable objects defined by their attributes
-- Domain Services: Stateless operations on domain objects
-- Domain Events: Events that represent state changes
-- Repository Protocols: Interfaces for persistence
-- Exceptions: Domain-specific errors
-
-Dependency Rule: Domain layer NEVER depends on outer layers.
+Contains:
+- Entities: Bot, Order, Position, Market, Trade
+- Value Objects: Price, Size, Zone, PnL, Risk
+- Services: Risk, Kelly, Zone classifiers
+- Events: Domain events
+- Protocols: Repository interfaces
 """
-
-__version__ = "0.1.0"

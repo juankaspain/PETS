@@ -1,167 +1,87 @@
-"""Market entity - Prediction market representation."""
+"""Market entity."""
 
-from dataclasses import dataclass, replace
+from dataclasses import dataclass
 from datetime import datetime
 from decimal import Decimal
+from typing import Optional
 
-from src.domain.exceptions import DomainError
-from src.domain.value_objects.identifiers import MarketId
+from src.domain.value_objects.price import Price
 
 
 @dataclass(frozen=True)
 class Market:
-    """Prediction market entity.
+    """Market entity.
 
-    Represents a binary prediction market on Polymarket.
+    Represents a prediction market with question, outcomes, and pricing.
 
-    Attributes:
-        market_id: Unique market identifier (hex format)
-        question: Market question text
-        outcomes: List of outcome names (usually ["Yes", "No"])
-        liquidity_usdc: Current liquidity in USDC
-        volume_24h_usdc: 24h trading volume in USDC
-        created_at: Market creation timestamp
-        resolves_at: Expected resolution timestamp
-        resolved_at: Actual resolution timestamp (None if not resolved)
-        winning_outcome: Winning outcome index (None if not resolved)
+    Example:
+        >>> market = Market(
+        ...     market_id="0x123...",
+        ...     question="Will X happen?",
+        ...     outcomes=["YES", "NO"],
+        ...     liquidity=Decimal("100000"),
+        ...     volume_24h=Decimal("50000"),
+        ...     yes_price=Price(Decimal("0.55")),
+        ...     no_price=Price(Decimal("0.45")),
+        ...     created_at=datetime.now(),
+        ... )
     """
 
-    market_id: MarketId
+    market_id: str
     question: str
-    outcomes: tuple[str, ...]
-    liquidity_usdc: Decimal
-    volume_24h_usdc: Decimal
+    outcomes: list[str]
+    liquidity: Decimal
+    volume_24h: Decimal
     created_at: datetime
-    resolves_at: datetime
-    resolved_at: datetime | None = None
-    winning_outcome: int | None = None
+    updated_at: datetime
+    yes_price: Optional[Price] = None
+    no_price: Optional[Price] = None
+    resolves_at: Optional[datetime] = None
+    resolved: bool = False
+    resolved_outcome: Optional[str] = None
 
     def __post_init__(self) -> None:
-        """Validate market attributes.
+        """Validate market."""
+        if self.liquidity < Decimal("0"):
+            raise ValueError("liquidity must be non-negative")
 
-        Raises:
-            DomainError: If validation fails
-        """
-        if not self.question.strip():
-            raise DomainError("Market question cannot be empty")
+        if self.volume_24h < Decimal("0"):
+            raise ValueError("volume_24h must be non-negative")
 
-        if len(self.outcomes) < 2:
-            raise DomainError(
-                f"Market must have at least 2 outcomes, got {len(self.outcomes)}"
-            )
+        if not self.outcomes:
+            raise ValueError("outcomes cannot be empty")
 
-        if self.liquidity_usdc < Decimal("0"):
-            raise DomainError(f"Liquidity cannot be negative: {self.liquidity_usdc}")
-
-        if self.volume_24h_usdc < Decimal("0"):
-            raise DomainError(
-                f"Volume cannot be negative: {self.volume_24h_usdc}"
-            )
-
-        if self.resolved_at is not None and self.winning_outcome is None:
-            raise DomainError(
-                "Resolved market must have winning_outcome",
-                market_id=str(self.market_id),
-            )
-
-        if self.winning_outcome is not None:
-            if not 0 <= self.winning_outcome < len(self.outcomes):
-                raise DomainError(
-                    f"Invalid winning_outcome: {self.winning_outcome}",
-                    valid_range=f"0-{len(self.outcomes)-1}",
+        # Validate prices sum to ~1.0 (allowing small rounding)
+        if self.yes_price and self.no_price:
+            price_sum = self.yes_price.value + self.no_price.value
+            if abs(price_sum - Decimal("1.0")) > Decimal("0.01"):
+                raise ValueError(
+                    f"YES + NO prices must sum to ~1.0, got {price_sum}"
                 )
 
-    def update_liquidity(self, new_liquidity: Decimal) -> "Market":
-        """Update market liquidity.
+    def is_active(self) -> bool:
+        """Check if market is active (not resolved)."""
+        return not self.resolved
+
+    def has_sufficient_liquidity(self, min_liquidity: Decimal) -> bool:
+        """Check if market has sufficient liquidity.
 
         Args:
-            new_liquidity: New liquidity value in USDC
+            min_liquidity: Minimum required liquidity
 
         Returns:
-            New Market instance with updated liquidity
-
-        Raises:
-            DomainError: If new_liquidity negative
+            True if liquidity >= min_liquidity
         """
-        if new_liquidity < Decimal("0"):
-            raise DomainError(f"Liquidity cannot be negative: {new_liquidity}")
+        return self.liquidity >= min_liquidity
 
-        return replace(self, liquidity_usdc=new_liquidity)
-
-    def update_volume(self, new_volume: Decimal) -> "Market":
-        """Update 24h trading volume.
-
-        Args:
-            new_volume: New 24h volume in USDC
+    def spread(self) -> Optional[Decimal]:
+        """Calculate bid-ask spread.
 
         Returns:
-            New Market instance with updated volume
-
-        Raises:
-            DomainError: If new_volume negative
+            Spread or None if prices not available
         """
-        if new_volume < Decimal("0"):
-            raise DomainError(f"Volume cannot be negative: {new_volume}")
-
-        return replace(self, volume_24h_usdc=new_volume)
-
-    def resolve(self, winning_outcome: int, timestamp: datetime) -> "Market":
-        """Resolve market with winning outcome.
-
-        Args:
-            winning_outcome: Index of winning outcome
-            timestamp: Resolution timestamp
-
-        Returns:
-            New Market instance with resolution data
-
-        Raises:
-            DomainError: If already resolved or invalid outcome
-        """
-        if self.is_resolved:
-            raise DomainError(
-                "Market already resolved", market_id=str(self.market_id)
-            )
-
-        if not 0 <= winning_outcome < len(self.outcomes):
-            raise DomainError(
-                f"Invalid winning_outcome: {winning_outcome}",
-                valid_range=f"0-{len(self.outcomes)-1}",
-            )
-
-        return replace(
-            self, resolved_at=timestamp, winning_outcome=winning_outcome
-        )
-
-    @property
-    def is_resolved(self) -> bool:
-        """Check if market is resolved."""
-        return self.resolved_at is not None
-
-    @property
-    def is_expired(self) -> bool:
-        """Check if market has passed resolution date."""
-        return datetime.utcnow() > self.resolves_at
-
-    @property
-    def days_until_resolution(self) -> float:
-        """Get days until expected resolution.
-
-        Returns:
-            Days until resolution (negative if expired)
-        """
-        delta = self.resolves_at - datetime.utcnow()
-        return delta.total_seconds() / 86400  # seconds per day
-
-    def __str__(self) -> str:
-        """String representation."""
-        status = "RESOLVED" if self.is_resolved else "ACTIVE"
-        return f"Market {self.market_id}: {self.question[:50]}... ({status})"
-
-    def __repr__(self) -> str:
-        """Developer representation."""
-        return (
-            f"Market(market_id={self.market_id}, "
-            f"question='{self.question[:30]}...', "
-            f"is_resolved={self.is_resolved})"
-        )
+        if self.yes_price and self.no_price:
+            # In Polymarket, spread is implicit in YES/NO pricing
+            # Simple spread: deviation from 0.5
+            return abs(self.yes_price.value - Decimal("0.5")) * Decimal("2")
+        return None
