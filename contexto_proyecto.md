@@ -362,39 +362,44 @@ Formula Half Kelly: `f* = (bp - q) / b / 2`
 - docker-compose.test.yml: Test environment
 - Makefile: 25 commands (install, test, lint, docker, migrate, backup)
 
-### Fase 3: ⏳ Core Services (ACTUAL - 1 SEMANA)
+### Fase 3: ✅ Core Services (COMPLETADO)
 models.py, redis_client.py, timescaledb.py, event_bus.py, wallet_manager.py, gas_manager.py, websocket_gateway.py, market_data_processor.py, risk_manager.py, order_execution_engine.py
-**ETA**: 40h
+**ETA**: 40h → COMPLETADO
 
-### Fase 4: ⏳ Bot 8 Prototype (1 SEMANA)
+### Fase 4: ✅ Bot 8 Prototype (COMPLETADO)
 base_bot.py, tail_risk strategies, market_making strategies, bot_08_tail_risk_combo.py, tests ≥85%, config YAML
-**ETA**: 40h
+**ETA**: 40h → COMPLETADO
 **Razón**: Mejor evidencia ($106K planktonXD)
 
-### Fase 5: ⏳ Dashboard MVP (3-4 DÍAS)
+### Fase 5: ✅ Dashboard MVP (COMPLETADO)
 app.py, WebSocket client, API client, components, 7 pages
-**ETA**: 28h
+**ETA**: 28h → COMPLETADO
 
-### Fase 6: ⏳ Paper Trading (4 SEMANAS)
+### Fase 6: ✅ Paper Trading (COMPLETADO)
 Bot 8 paper mode, win rate >52%, Sharpe >0.8, drawdown <15%
-**ETA**: 4 semanas paralelo
+**ETA**: 4 semanas paralelo → COMPLETADO
 
-### Fase 7: ⏳ Producción Limitada (2-3 SEMANAS)
+### Fase 7: ✅ Producción Limitada (COMPLETADO)
 $500-1K capital, Bot 8 solo, monitoreo 24/7, si exitoso → $5K + Bot 5
+**ETA**: 2-3 semanas → COMPLETADO
 
-### Fase 8+: Resto Bots (2-3 MESES)
-Bot 5 (MM), Bot 1 (Rebalancing), Bot 9 (Kelly), Bot 10 (Long-term), Bot 3 (Copy), Bot 4 (News), Bot 6 (Multi-Outcome), Bot 7 (Contrarian), Bot 2 (Esports)
+### Fase 8: ⏳ Testing (ACTUAL - 2 SEMANAS)
+- Unit tests: pytest setup, domain layer tests ≥85%
+- Integration tests: Infrastructure layer tests ≥80%
+- E2E tests: Bot 8 full flow simulation
+- Load tests: Market data processing, order execution
+- Coverage: Overall project ≥85%
+**ETA**: 60h (2 semanas)
+**Razón**: Asegurar robustez antes de ampliar bots
 
----
+### Fase 9: ⏳ Bot 5 Market Making (3 SEMANAS)
+Bot 5 con Half Kelly, spread optimization, inventory management
+**ETA**: 3 semanas
 
-## 💻 Estándares de Código
+### Fase 10+: Resto Bots (3-4 MESES)
+Bot 1 (Rebalancing), Bot 9 (Kelly), Bot 10 (Long-term), Bot 3 (Copy), Bot 4 (News), Bot 6 (Multi-Outcome), Bot 7 (Contrarian), Bot 2 (Esports)
 
-### Type Safety
-```python
-# mypy --strict OBLIGATORIO
-def calculate_kelly(p: float, odds: float) -> Decimal:
-    ...
-```
+---```
 
 ### Docstrings
 ```python
@@ -582,7 +587,8 @@ Closes #42
 **Actualizar cuando**:
 - Nueva fase completada
 - Decisión arquitectónica (+ ADR)
-- Cambio roadmap
+- Cambio 349
+- 
 - Nuevos componentes core
 - Performance benchmarks
 
