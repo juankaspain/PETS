@@ -1,19 +1,122 @@
-# Bot Configuration Template
-bot_id: PLACEHOLDER
-name: "Bot Name"
-enabled: false
-strategy_type: "agresivo"
+# Bot 05: Market Making Strategy Configuration
+# Strategy: Dual-sided quoting with inventory management
+# Target: Z2-Z3 markets (0.20-0.60 range)
+# Sizing: Half Kelly ONLY
+# Orders: Post-only OBLIGATORIO (20% maker rebates)
 
-capital:
-  allocation_percentage: 10
-  min_position_size_usd: 10
-  max_position_size_usd: 1000
+bot_id: 5
+strategy_type: "market_making"
+enabled: true
 
-risk_management:
-  max_drawdown_percentage: 25
-  max_consecutive_losses: 3
-  daily_loss_limit_percentage: 5
+# Capital allocation
+capital_allocated: 5000  # $5K (10% of $50K portfolio)
+max_positions: 10  # Max simultaneous markets
 
-# Strategy-specific configuration
-strategy:
-  # Add strategy parameters here
+# Execution parameters
+cycle_interval_seconds: 5  # Fast quote updates (5s)
+max_order_age_seconds: 60  # Cancel orders older than 60s
+max_open_orders: 40  # 20 markets * 2 sides
+
+# Spread configuration
+base_spread_bps: 50  # 0.50% base spread
+min_spread_bps: 20  # 0.20% minimum (tight markets)
+max_spread_bps: 200  # 2.00% maximum (volatile markets)
+
+# Spread adjustments
+liquidity_multiplier:
+  high: 1.0    # >$10K liquidity: no adjustment
+  medium: 1.5  # $5K-$10K: +50% spread
+  low: 2.0     # <$5K: +100% spread
+
+volatility_multiplier:
+  low: 1.0     # <5% volatility: no adjustment
+  medium: 1.2  # 5-10% volatility: +20% spread
+  high: 1.5    # >10% volatility: +50% spread
+
+zone_multiplier:
+  zone_1: 1.0  # 0.05-0.20: no adjustment
+  zone_2: 1.0  # 0.20-0.40: no adjustment (target)
+  zone_3: 1.1  # 0.40-0.60: +10% spread (target)
+  zone_4: 1.5  # 0.60-0.80: +50% spread (arb-only)
+  zone_5: 2.0  # 0.80-0.98: +100% spread (arb-only)
+
+# Inventory management
+max_inventory_imbalance: 0.30  # 30% max imbalance
+skew_threshold: 0.15  # 15% triggers quote skew
+max_skew_bps: 50  # Max 50 bps skew adjustment
+rebalance_threshold: 0.25  # 25% triggers rebalance signal
+
+# Market selection
+target_markets: 20  # Quote 20 markets simultaneously
+liquidity_threshold_usdc: 5000  # Min $5K liquidity
+max_spread_threshold_bps: 300  # Skip if spread >3%
+zone_preferences:
+  - 2  # Zone 2: 0.20-0.40 (primary)
+  - 3  # Zone 3: 0.40-0.60 (secondary)
+  # Zone 4-5: arbitrage mode only
+
+# Position sizing (Half Kelly)
+kelly_fraction: 0.5  # Half Kelly ONLY (Full Kelly PROHIBIDO)
+edge_min: 0.005  # Minimum 0.5% edge required
+max_position_size_usdc: 1000  # Max $1K per market
+min_position_size_usdc: 50  # Min $50 per market
+
+# Order execution
+post_only: true  # OBLIGATORIO (20% maker rebates)
+time_in_force: "GTC"  # Good-til-cancelled
+max_slippage_bps: 10  # Max 0.10% slippage (post-only should be 0)
+
+# Risk management
+circuit_breakers:
+  consecutive_losses: 5  # Pause after 5 losses
+  daily_loss_pct: 0.03  # Pause if -3% daily
+  inventory_breach_pct: 0.40  # Emergency halt if >40% imbalance
+  spread_violation_count: 10  # Halt after 10 spread violations
+
+max_drawdown_pct: 0.15  # 15% max drawdown
+stop_loss_pct: 0.10  # 10% per-market stop loss
+
+# Performance targets
+target_metrics:
+  daily_return_bps: 30  # 0.30% daily (9% monthly)
+  win_rate: 0.65  # 65% of quotes profitable
+  sharpe_ratio: 1.5  # 1.5+ Sharpe
+  max_drawdown: 0.10  # <10% drawdown
+  spread_capture_pct: 0.70  # Capture 70% of spread
+  rebate_yield_bps: 10  # 0.10% from rebates
+
+# Logging
+log_level: "INFO"
+log_metrics_interval_seconds: 60  # Log metrics every 60s
+log_quotes: false  # Don't log every quote (too verbose)
+log_fills: true  # Log all fills
+
+# Monitoring
+alerts:
+  inventory_imbalance_pct: 0.25  # Alert at 25%
+  spread_anomaly_bps: 400  # Alert if spread >4%
+  fill_rate_threshold: 0.50  # Alert if <50% fills
+  rebate_shortfall_bps: 5  # Alert if rebates <0.05%
+
+# Paper trading
+paper_mode: false  # Set true for testing
+paper_balance_usdc: 5000  # Virtual balance for paper trading
+
+# External integrations
+websocket:
+  url: "wss://clob.polymarket.com/ws"  # CLOB WebSocket
+  reconnect_interval_seconds: 5
+  heartbeat_interval_seconds: 30
+  max_reconnect_attempts: 10
+
+rest_api:
+  base_url: "https://clob.polymarket.com/api/v1"
+  rate_limit_per_second: 60
+  timeout_seconds: 10
+  retry_attempts: 3
+
+# Database
+database:
+  save_quotes: false  # Don't save every quote
+  save_fills: true  # Save all fills
+  save_metrics_interval_seconds: 300  # Save metrics every 5min
