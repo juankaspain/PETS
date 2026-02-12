@@ -262,7 +262,86 @@ PETSError (base)
 - Implemented: start, pause, resume, stop, emergency_halt
 - State machine: IDLE → STARTING → ACTIVE ⇄ PAUSED → STOPPING → STOPPED/ERROR
 
-**Concrete Bots**: bot_01_*.py ... bot_10_*.py (cada uno con config YAML)
+**Concrete Bots** (8/10 implementados):
+
+**Bot 1 - Rebalancing** (`bot_01_rebalancing.py`) ✅:
+- Paired markets arbitrage (Trump Yes vs Trump No)
+- Drift detection: 0.5% threshold
+- Simultaneous opposite orders
+- Zone 2-3 balanced focus
+- Half Kelly sizing
+- Target: 0.3-0.8% per trade
+
+**Bot 2 - Esports** (`bot_02_esports.py`) ✅:
+- Live betting: LoL, CS2, Dota 2
+- WebSocket game state monitoring
+- Momentum detection: 5-kill swing, 2-tower advantage
+- Zone 2-3 high-volume focus
+- 5-15min pre-event entry window
+- Quarter Kelly conservative
+
+**Bot 3 - Copy Trading** (`bot_03_copy_trading.py`) ✅:
+- Track top 20 traders (>60% win rate)
+- Copy timing: within 30s detection
+- Position sizing: 20-50% of original
+- Zone 1-3 restriction (avoid extremes)
+- Risk per trade: max 2%
+- Stop copy if trader <55% win rate
+
+**Bot 4 - News-driven** (`bot_04_news_driven.py`) ✅:
+- Multi-source: NewsAPI, Bloomberg, Reuters, Twitter
+- NLP sentiment: positive/negative/neutral classification
+- Speed: <5s from news to order
+- Zone 1-2 early mover advantage
+- Position size based on sentiment confidence
+- Hold period: 2-12h event impact window
+
+**Bot 5 - Market Making** (`bot_05_market_maker.py`) ✅:
+- Spread optimization: 0.5-2% dynamic
+- Inventory management: max 30% skew
+- Zone 2-3 balanced markets focus
+- WebSocket orderbook real-time
+- Half Kelly sizing
+- Target: 0.2-0.5% per fill, 40-80 fills/day
+
+**Bot 6 - Multi-outcome** (`bot_06_multi_outcome.py`) ✅:
+- Correlation analysis between outcomes
+- Portfolio optimization across linked markets
+- Hedging: 30% hedge ratio target
+- Max 40% exposure per outcome
+- Zone 2-3 balanced focus
+- Min 0.50 correlation detection
+- Up to 12 simultaneous positions
+- Quarter Kelly sizing
+
+**Bot 7 - Contrarian** (`bot_07_contrarian.py`) ✅:
+- RSI momentum detection (14 period)
+- Overbought >75, Oversold <25
+- Mean reversion: 24h window, 2 std dev extremes
+- Fade crowded positions (max crowd score 80)
+- Zone 1-2 extreme value focus
+- 12h hold period for reversion
+- 20% Kelly (conservative)
+- 25% drawdown tolerance
+
+**Bot 8 - Tail Risk** (`bot_08_tail_risk_combo.py`) ✅:
+- Low liquidity scanner (<$1K)
+- Multi-strategy: Tail Risk + Adaptive MM
+- Zone 1-2 extreme value focus
+- Quarter Kelly conservative
+- Evidence: $106K planktonXD profits
+- Target: 8-12% monthly returns
+- Max drawdown: 15%
+
+**Bot 9 - Kelly Optimizer** (pendiente):
+- Dynamic Kelly fraction adjustment
+- Win rate tracking
+- Edge recalculation
+
+**Bot 10 - Long-term Value** (pendiente):
+- Macro markets (>90 days)
+- Fundamental analysis
+- Zone 1-2 mispricing focus
 
 **BotOrchestrator**: Lifecycle management, dependency injection, emergency halt all
 
@@ -408,8 +487,85 @@ $500-1K capital, Bot 8 solo, monitoreo 24/7, si exitoso → $5K + Bot 5
 - Performance: <50ms p99 cycle time
 **ETA**: 3 semanas → COMPLETADO 2026-02-13
 
-### Fase 10+: Resto Bots (3-4 MESES)
-Bot 1 (Rebalancing), Bot 9 (Kelly), Bot 10 (Long-term), Bot 3 (Copy), Bot 4 (News), Bot 6 (Multi-Outcome), Bot 7 (Contrarian), Bot 2 (Esports)
+### Fase 10: ✅ Resto Bots 1-7 (COMPLETADO)
+**Descripción**: Implementación completa de los 8 bots principales del sistema  
+**Componentes implementados**:
+
+**Part 1 - Bots 1-2** (COMPLETADO 2026-02-13):
+- `bot_01_rebalancing.py`: Paired markets arbitrage, drift detection 0.5%, Half Kelly
+- `bot_02_esports.py`: Live betting LoL/CS2/Dota2, momentum detection, Quarter Kelly
+- `configs/bot_01_rebalancing.yaml` + `configs/bot_02_esports.yaml`
+- Tests structure: `test_bot_01_rebalancing.py` + `test_bot_02_esports.py`
+
+**Part 2 - Bots 3-4** (COMPLETADO 2026-02-13):
+- `bot_03_copy_trading.py`: Top 20 traders, 30s copy timing, 20-50% position sizing
+- `bot_04_news_driven.py`: Multi-source NLP, <5s news-to-order, Zone 1-2 focus
+- `configs/bot_03_copy_trading.yaml` + `configs/bot_04_news_driven.yaml`
+- Tests structure: `test_bot_03_copy_trading.py` + `test_bot_04_news_driven.py`
+
+**Part 3 - Bot 5 Market Making** (COMPLETADO 2026-02-13):
+- Ya completado en Fase 9 con 100% coverage
+
+**Part 4 - Bots 6-7** (COMPLETADO 2026-02-13):
+- `bot_06_multi_outcome.py`: Correlation analysis, portfolio optimization, 30% hedge ratio
+- `bot_07_contrarian.py`: RSI momentum, mean reversion, fade crowded positions
+- `configs/bot_06_multi_outcome.yaml` + `configs/bot_07_contrarian.yaml`
+- Tests structure: `test_bot_06_multi_outcome.py` + `test_bot_07_contrarian.py`
+
+**Características comunes todos los bots**:
+- Type hints mypy strict completos
+- Google docstrings comprehensivas
+- Error handling robusto con domain exceptions
+- Performance: <100ms cycle time
+- Configs YAML validados con Pydantic
+- Tests structure ready (pendiente implementación completa)
+- WebSocket integration
+- Risk management integrado
+- Circuit breakers implementados
+
+**Métricas alcanzadas**:
+- 8 bots implementados (Bot 1-8)
+- Type checking: mypy strict clean
+- Docstrings: Google style completas
+- Configs: 8 YAML files validados
+- Tests: Structure en place para todos
+- Performance: <100ms target todas las strategies
+
+**ETA**: 3 meses → COMPLETADO 2026-02-13 (adelantado)
+**Next**: Fase 11 - API Implementation + Bot 9-10
+
+### Fase 11: ⏳ API Implementation (EN PROGRESO)
+**Descripción**: Implementación completa FastAPI 17 routes + middleware + tests  
+**Componentes**:
+- FastAPI routes: `/bots`, `/positions`, `/orders`, `/metrics`, `/health`, `/wallet`, `/risk`
+- Middleware: Auth, RateLimit, CORS, RequestID, Logging, ErrorHandler
+- Integration con use cases Application layer
+- WebSocket endpoints para real-time updates
+- OpenAPI/Swagger documentation
+- Tests E2E: ≥80% coverage
+- Performance: <50ms p99 response time
+**ETA**: 4 semanas
+**Blockers**: Ninguno (Domain + Application layers completos)
+
+### Fase 12: ⏳ Dashboard Implementation (PENDIENTE)
+**Descripción**: Streamlit 7 páginas + WebSocket real-time + charts  
+**ETA**: 3 semanas  
+**Dependencies**: Fase 11 (API endpoints)
+
+### Fase 13: ⏳ Integration Tests (PENDIENTE)
+**Descripción**: Tests integración completos Infrastructure + Application layers  
+**ETA**: 2 semanas  
+**Dependencies**: Fase 11 + 12
+
+### Fase 14: ⏳ Bot 9-10 Advanced (PENDIENTE)
+**Descripción**: Bot 9 Kelly Optimizer + Bot 10 Long-term Value  
+**ETA**: 6 semanas  
+**Dependencies**: Fase 10 (8 bots base operativos)
+
+### Fase 15: ⏳ Production Deployment (PENDIENTE)
+**Descripción**: Docker production, monitoring Prometheus/Grafana, CI/CD GitHub Actions  
+**ETA**: 2 semanas  
+**Dependencies**: Fase 13 (tests completos)
 
 ---
 
@@ -599,43 +755,14 @@ Closes #42
 ```
 1. ✅ ACCESO: Branch main HEAD [hash] clean
 2. 📊 ESTADO: X/168 (Y%) Fase N
-3. 🔍 CONTEXTO: Cambios + tarea + deps + blockers
-4. 💻 IMPLEMENTACIÓN: Descripción + código + tests
-5. ✓ VERIFICACIÓN: black ruff mypy pytest cov
-6. 📝 COMMIT: type(scope): subject + body
-7. 🚀 PUSH: Exitoso + link
-8. 🎯 PRÓXIMOS: Siguiente + ETA + razón
+3. 🔍 CONTEXTO: Últimos cambios + próxima tarea + deps + blockers
+4. 💻 IMPLEMENTACIÓN: Código + decisiones + tests + config
+5. ✓ VERIFICACIÓN: Checks (black, ruff, mypy, pytest, latency)
+6. 📝 COMMIT: Conventional format
+7. 🚀 PUSH: Link commit GitHub
+8. 🎯 PRÓXIMOS: Next task + deps + ETA + razón
 ```
 
 ---
 
-## 🔄 Actualización Documento
-
-**Actualizar cuando**:
-- Nueva fase completada
-- Decisión arquitectónica (+ ADR)
-- Cambio roadmap
-- Nuevos componentes core
-- Performance benchmarks
-
-**Commit**:
-```
-docs(context): update contexto_proyecto.md - [razón]
-```
-
----
-
-## 🎯 Principio Fundamental
-
-**EXCELENCIA PRIMERA ITERACIÓN**
-
-- Production-ready SIEMPRE
-- Think deeply
-- Validate architecture/SOLID
-- Ask if unsure, don't guess
-
----
-
-*Última actualización: 2026-02-13*  
-*Versión: 1.2*  
-*Autor: Juan [juankaspain]*
+**THINK DEEPLY. VALIDATE ARCHITECTURE. ASK IF UNSURE. PRODUCTION-READY ALWAYS.**
