@@ -1,47 +1,57 @@
-"""Order schemas."""
+"""Order API schemas.
+
+Author: Juan [juankaspain]
+Created: 2026-02-13
+"""
 
 from datetime import datetime
 from decimal import Decimal
-from uuid import UUID
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
+
+from src.domain.value_objects import OrderStatus, Side, Zone
 
 
-class OrderCreate(BaseModel):
-    """Create order request."""
+class PlaceOrderRequest(BaseModel):
+    """Place order request."""
 
-    bot_id: int = Field(..., description="Bot ID")
-    market_id: str = Field(..., description="Market ID")
-    side: str = Field(..., description="Order side (BUY or SELL)", pattern="^(BUY|SELL)$")
+    bot_id: int = Field(..., description="Bot placing order")
+    market_id: str = Field(..., description="Market identifier")
+    side: Side = Field(..., description="Order side (YES/NO)")
+    price: Decimal = Field(..., ge=Decimal("0.01"), le=Decimal("0.99"), description="Order price")
     size: Decimal = Field(..., gt=0, description="Order size")
-    price: Decimal = Field(
-        ..., ge=0.01, le=0.99, description="Limit price (0.01 to 0.99)"
-    )
-    zone: int = Field(..., ge=1, le=5, description="Risk zone (1-5)")
-    post_only: bool = Field(True, description="Post-only flag (default True)")
+    post_only: bool = Field(True, description="Post-only order (maker)")
+
+    @field_validator("price")
+    @classmethod
+    def validate_zones(cls, v: Decimal) -> Decimal:
+        """Validate price not in prohibited zones."""
+        if Decimal("0.60") <= v <= Decimal("0.98"):
+            raise ValueError("Zone 4-5 directional trading prohibited")
+        return v
 
 
 class OrderResponse(BaseModel):
-    """Order response."""
+    """Order details response."""
 
-    order_id: UUID
-    bot_id: int
-    market_id: str
-    side: str
-    size: Decimal
-    price: Decimal
-    zone: int
-    status: str
-    post_only: bool
-    created_at: datetime
-    updated_at: datetime
-    filled_size: Decimal | None = None
+    order_id: str = Field(..., description="Order identifier")
+    bot_id: int = Field(..., description="Bot identifier")
+    market_id: str = Field(..., description="Market identifier")
+    side: Side = Field(..., description="Order side")
+    price: Decimal = Field(..., description="Order price")
+    size: Decimal = Field(..., description="Order size")
+    filled_size: Decimal = Field(..., description="Filled size")
+    status: OrderStatus = Field(..., description="Order status")
+    zone: Zone = Field(..., description="Price zone")
+    created_at: datetime = Field(..., description="Order created timestamp")
+    filled_at: datetime | None = Field(None, description="Order filled timestamp")
 
     class Config:
         from_attributes = True
 
 
-class OrderCancel(BaseModel):
-    """Cancel order request."""
+class OrderListResponse(BaseModel):
+    """List of orders response."""
 
-    reason: str | None = Field(None, description="Cancellation reason")
+    orders: list[OrderResponse] = Field(..., description="List of orders")
+    total: int = Field(..., description="Total number of orders")
