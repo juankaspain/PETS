@@ -2,7 +2,8 @@
 
 **Sistema Operativo:** Windows 10/11  
 **Terminal:** Git Bash (NO PowerShell, NO CMD)  
-**Python:** 3.11+
+**Python:** 3.11+  
+**Ruta Proyecto:** `E:\OneDrive\Escritorio\Bots\PETS`
 
 ---
 
@@ -136,30 +137,31 @@ which python
 
 ## 📂 CLONAR REPOSITORIO
 
-### Paso 3.1: Navegar a Directorio Deseado
+### Paso 3.1: Navegar a Tu Directorio
+
+**TU RUTA ESPECÍFICA:** `E:\OneDrive\Escritorio\Bots\PETS`
 
 ```bash
-# Ir a tu carpeta de proyectos
-# WINDOWS PATH: C:\Users\TuUsuario\Documents\Proyectos
-# GIT BASH PATH: /c/Users/TuUsuario/Documents/Proyectos
+# En Git Bash, E:\ se convierte en /e/
+# Windows: E:\OneDrive\Escritorio\Bots
+# Git Bash: /e/OneDrive/Escritorio/Bots
 
-cd /c/Users/TuUsuario/Documents
+# Navegar a tu carpeta Bots
+cd /e/OneDrive/Escritorio/Bots
 
-# Crear carpeta proyectos si no existe
-mkdir -p Proyectos
-cd Proyectos
+# Verificar estás en el lugar correcto
+pwd
+# Debe mostrar: /e/OneDrive/Escritorio/Bots
 ```
 
-**⚠️ IMPORTANTE WINDOWS PATHS:**
+**⚠️ IMPORTANTE CONVERSIÓN PATHS WINDOWS → GIT BASH:**
 
 ```bash
-# ❌ MAL (Windows style):
-cd C:\Users\TuUsuario\Documents
+# Windows style:     E:\OneDrive\Escritorio\Bots\PETS
+# Git Bash style:    /e/OneDrive/Escritorio/Bots/PETS
 
-# ✅ BIEN (Git Bash style):
-cd /c/Users/TuUsuario/Documents
-
-# Conversión:
+# Reglas conversión:
+# E:\ → /e/
 # C:\ → /c/
 # D:\ → /d/
 # Backslash \ → Forward slash /
@@ -168,6 +170,9 @@ cd /c/Users/TuUsuario/Documents
 ### Paso 3.2: Clonar PETS
 
 ```bash
+# Asegúrate estar en /e/OneDrive/Escritorio/Bots
+pwd
+
 # Clonar repositorio
 git clone https://github.com/juankaspain/PETS.git
 
@@ -182,6 +187,8 @@ git checkout main
 git pull origin main
 ```
 
+**Ahora tu ruta completa es:** `/e/OneDrive/Escritorio/Bots/PETS`
+
 **✅ CHECKPOINT:** Directorio PETS creado con archivos
 
 ---
@@ -191,9 +198,10 @@ git pull origin main
 ### Paso 4.1: Crear Entorno Virtual
 
 ```bash
-# ASEGÚRATE ESTAR EN DIRECTORIO PETS
+# ASEGÚRATE ESTAR EN TU DIRECTORIO PETS
+cd /e/OneDrive/Escritorio/Bots/PETS
 pwd
-# Debe mostrar: /c/Users/TuUsuario/.../PETS
+# Debe mostrar: /e/OneDrive/Escritorio/Bots/PETS
 
 # Crear venv
 python -m venv venv
@@ -231,15 +239,15 @@ source venv/Scripts/activate
 
 ```bash
 # Debe aparecer (venv) en prompt:
-# (venv) user@DESKTOP-XXX MINGW64 /c/Users/.../PETS
+# (venv) user@DESKTOP-XXX MINGW64 /e/OneDrive/Escritorio/Bots/PETS
 
 # Verificar Python apunta a venv:
 which python
-# Debe mostrar: /c/Users/.../PETS/venv/Scripts/python
+# Debe mostrar: /e/OneDrive/Escritorio/Bots/PETS/venv/Scripts/python
 
 # Verificar pip del venv:
 which pip
-# Debe mostrar: /c/Users/.../PETS/venv/Scripts/pip
+# Debe mostrar: /e/OneDrive/Escritorio/Bots/PETS/venv/Scripts/pip
 ```
 
 **✅ CHECKPOINT:** Prompt muestra `(venv)` al inicio
@@ -277,7 +285,10 @@ pip list | grep web3
 ### Paso 5.1: Copiar Template
 
 ```bash
-# Desde directorio PETS/
+# Desde tu directorio PETS
+cd /e/OneDrive/Escritorio/Bots/PETS
+
+# Copiar template
 cp .env.example .env
 
 # Verificar creado
@@ -286,15 +297,7 @@ ls -lh .env
 
 ### Paso 5.2: Editar .env (WINDOWS)
 
-**Opción A: Editor Git Bash (nano/vim)**
-
-```bash
-nano .env
-# O:
-vim .env
-```
-
-**Opción B: Notepad++ (recomendado Windows)**
+**Opción A: Notepad++ (recomendado Windows)**
 
 ```bash
 # Abrir con Notepad++ (si instalado)
@@ -307,6 +310,14 @@ notepad.exe .env
 code .env
 ```
 
+**Opción B: Editor Git Bash (nano/vim)**
+
+```bash
+nano .env
+# O:
+vim .env
+```
+
 ### Paso 5.3: Configuración MÍNIMA (Copiar/Pegar)
 
 **IMPORTANTE:** Usar **forward slashes** `/` en paths, NO backslashes `\`
@@ -314,6 +325,7 @@ code .env
 ```bash
 # ========================================
 # CONFIGURACIÓN PAPER TRADING WINDOWS
+# RUTA: E:\OneDrive\Escritorio\Bots\PETS
 # ========================================
 
 # Blockchain (público)
@@ -391,7 +403,10 @@ RATE_LIMIT_WINDOW=60
 ### Paso 6.1: Crear Directorios
 
 ```bash
-# Desde directorio PETS/
+# Desde tu directorio PETS
+cd /e/OneDrive/Escritorio/Bots/PETS
+
+# Crear directorios necesarios
 mkdir -p logs
 mkdir -p logs/paper_trading_reports
 mkdir -p data
@@ -403,6 +418,17 @@ ls -lh data/
 ```
 
 **⚠️ NO necesitas `chmod` en Windows** (permisos diferentes)
+
+**⚠️ CONSIDERACIÓN ONEDRIVE:**
+
+OneDrive sincroniza archivos automáticamente. Para evitar sync continuo de logs:
+
+```bash
+# Opcional: Excluir logs de OneDrive sync
+# Windows Explorer → Click derecho carpeta logs → 
+# "Always keep on this device" → Desmarcar
+# "Free up space" → Marcar
+```
 
 **✅ CHECKPOINT:** Directorios creados
 
@@ -418,18 +444,18 @@ ls -lh data/
 2. O: Inicio → Git Bash
 
 ```bash
-# Navegar a PETS
-cd /c/Users/TuUsuario/Documents/Proyectos/PETS
+# Navegar a TU directorio PETS
+cd /e/OneDrive/Escritorio/Bots/PETS
 
 # Activar venv
 source venv/Scripts/activate
 
 # Verificar prompt (venv)
-echo "(venv) activado: OK"
+# Debe mostrar: (venv) user@DESKTOP MINGW64 /e/OneDrive/Escritorio/Bots/PETS
 
 # Verificar desde raíz
 pwd
-# Debe mostrar: /c/Users/.../PETS
+# Debe mostrar: /e/OneDrive/Escritorio/Bots/PETS
 ```
 
 ### Paso 7.2: EJECUTAR Bot 8
@@ -444,6 +470,13 @@ python scripts/run_bot8_paper_trading.py
 # ================================================================================
 # Duration: 30 days simulation
 # Initial Balance: $5,000
+# Strategy: Tail Risk (Z1-Z2 only)
+# Targets: Win rate >52%, Sharpe >0.8, Drawdown <15%
+# ================================================================================
+# 
+# 2026-02-13 03:38:00 - bot8_paper_trading_initialized
+# 2026-02-13 03:38:00 - session_started
+# 2026-02-13 03:38:00 - day_started: day=1, total_days=30
 # ...
 ```
 
@@ -451,39 +484,18 @@ python scripts/run_bot8_paper_trading.py
 
 ### Paso 7.3: Ejecución Background (Alternativa Windows)
 
-**Git Bash NO soporta nohup bien en Windows. Alternativas:**
-
-**Opción A: Screen/tmux (requiere instalación adicional)**
+**Si quieres cerrar ventana pero mantener bot corriendo:**
 
 ```bash
-# NO recomendado en Windows - complica setup
-```
+# Opción: Usar pythonw.exe (Windows background mode)
+pythonw.exe scripts/run_bot8_paper_trading.py
 
-**Opción B: Ejecutar en ventana separada persistente**
+# Ver proceso corriendo:
+tasklist | findstr python
+# Debe mostrar: pythonw.exe  PID  Console  ...
 
-```bash
-# Crear script launcher
-cat > run_bot8.sh << 'EOF'
-#!/bin/bash
-cd /c/Users/TuUsuario/Documents/Proyectos/PETS
-source venv/Scripts/activate
-python scripts/run_bot8_paper_trading.py > logs/bot8_stdout.log 2>&1
-EOF
-
-chmod +x run_bot8.sh
-
-# Ejecutar en nueva ventana Git Bash y minimizar
-./run_bot8.sh
-```
-
-**Opción C: Python en background (RECOMENDADO WINDOWS)**
-
-```bash
-# Usar pythonw.exe (Windows background mode)
-pythonw.exe scripts/run_bot8_paper_trading.py &
-
-# Ver proceso
-tasklist | grep python
+# Logs se guardan en: logs/bot8_paper_trading.log
+tail -f logs/bot8_paper_trading.log
 ```
 
 **Recomendación:** Primera vez usar **primer plano** para ver logs directos.
@@ -499,15 +511,15 @@ tasklist | grep python
 **Abrir SEGUNDA ventana Git Bash:**
 
 ```bash
-# Navegar a PETS
-cd /c/Users/TuUsuario/Documents/Proyectos/PETS
+# Navegar a TU directorio PETS
+cd /e/OneDrive/Escritorio/Bots/PETS
 
 # Activar MISMO venv
 source venv/Scripts/activate
 
 # Verificar venv activo
 which python
-# Debe mostrar: /c/Users/.../PETS/venv/Scripts/python
+# Debe mostrar: /e/OneDrive/Escritorio/Bots/PETS/venv/Scripts/python
 ```
 
 ### Paso 8.2: Verificar Streamlit
@@ -561,18 +573,18 @@ start http://localhost:8501
 
 **Ventana 1: Paper Trading Bot**
 ```
-(venv) user@DESKTOP MINGW64 /c/Users/.../PETS
+(venv) user@DESKTOP MINGW64 /e/OneDrive/Escritorio/Bots/PETS
 $ python scripts/run_bot8_paper_trading.py
 
-2026-02-13 03:34:00 - bot8_paper_trading_initialized
-2026-02-13 03:34:00 - session_started
-2026-02-13 03:34:05 - signal_detected: market=TRUMP2024, price=0.15
+2026-02-13 03:38:00 - bot8_paper_trading_initialized
+2026-02-13 03:38:00 - session_started
+2026-02-13 03:38:05 - signal_detected: market=TRUMP2024, price=0.15
 ...
 ```
 
 **Ventana 2: Dashboard**
 ```
-(venv) user@DESKTOP MINGW64 /c/Users/.../PETS/src/presentation/dashboard
+(venv) user@DESKTOP MINGW64 /e/OneDrive/Escritorio/Bots/PETS/src/presentation/dashboard
 $ streamlit run app.py --server.port 8501
 
   You can now view your Streamlit app in your browser.
@@ -600,10 +612,10 @@ $ streamlit run app.py --server.port 8501
 
 ### Verificar Logs Paper Trading
 
-**Ventana Git Bash #3 (nueva o usa #1 temporalmente):**
+**Ventana Git Bash #3 (nueva o usa #1 temporalmente con Ctrl+C):**
 
 ```bash
-cd /c/Users/TuUsuario/Documents/Proyectos/PETS
+cd /e/OneDrive/Escritorio/Bots/PETS
 
 # Ver logs en tiempo real
 tail -f logs/bot8_paper_trading.log
@@ -623,7 +635,7 @@ cat logs/paper_trading_reports/bot8_day_01.json | python -m json.tool
 # Salida esperada:
 {
   "day": 1,
-  "date": "2026-02-13T03:34:00Z",
+  "date": "2026-02-13T03:38:00Z",
   "balance": 5085.00,
   "day_pnl": 85.00,
   "trades_count": 2,
@@ -636,7 +648,7 @@ cat logs/paper_trading_reports/bot8_day_01.json | python -m json.tool
 - ✅ Bot 8 corriendo (Ventana #1)
 - ✅ Dashboard activo (Ventana #2)
 - ✅ Navegador mostrando métricas
-- ✅ Logs generándose
+- ✅ Logs generándose en `E:\OneDrive\Escritorio\Bots\PETS\logs\`
 - ✅ Reportes creándose
 
 ---
@@ -652,14 +664,16 @@ tasklist | findstr python
 
 # O ver ventana Git Bash #1 activa con logs
 
-# 2. Ver reporte día anterior
-cd /c/Users/TuUsuario/Documents/Proyectos/PETS
+# 2. Navegar a tu directorio
+cd /e/OneDrive/Escritorio/Bots/PETS
+
+# 3. Ver reporte día anterior
 cat logs/paper_trading_reports/bot8_day_$(date +%d -d yesterday).json | python -m json.tool
 
-# 3. Abrir dashboard
+# 4. Abrir dashboard
 start http://localhost:8501
 
-# 4. Revisar métricas clave:
+# 5. Revisar métricas clave:
 # - Win rate trending hacia >52%
 # - Drawdown <15%
 # - No circuit breakers triggered
@@ -698,7 +712,7 @@ taskkill /PID 12345 /F
 
 ```bash
 # Volver a Ventana #1 Git Bash
-cd /c/Users/TuUsuario/Documents/Proyectos/PETS
+cd /e/OneDrive/Escritorio/Bots/PETS
 source venv/Scripts/activate
 python scripts/run_bot8_paper_trading.py
 ```
@@ -729,7 +743,7 @@ source ~/.bashrc
 # CAUSA: No estás en directorio raíz PETS
 
 # SOLUCIÓN:
-cd /c/Users/TuUsuario/Documents/Proyectos/PETS
+cd /e/OneDrive/Escritorio/Bots/PETS
 pwd  # Verificar
 python scripts/run_bot8_paper_trading.py
 ```
@@ -740,6 +754,7 @@ python scripts/run_bot8_paper_trading.py
 # CAUSA: venv no creado o ruta incorrecta
 
 # VERIFICAR venv existe:
+cd /e/OneDrive/Escritorio/Bots/PETS
 ls -lh venv/Scripts/
 
 # Si no existe, crear:
@@ -786,132 +801,77 @@ tail -f logs/bot8_paper_trading.log
 # Ventana #2: Ctrl+C → relanzar dashboard
 ```
 
-### Error: `PermissionError` al escribir logs
+### Problema: OneDrive Sincronización Constante
 
 ```bash
-# CAUSA: Antivirus/Permisos Windows
+# Si OneDrive sincroniza logs continuamente (ralentiza):
 
-# SOLUCIÓN A: Ejecutar Git Bash como Administrador
-# Click derecho → "Run as administrator"
+# Opción A: Excluir carpeta logs de sync
+# 1. Explorador Windows → E:\OneDrive\Escritorio\Bots\PETS\logs
+# 2. Click derecho → Free up space
+# 3. Logs quedan solo local, no en nube
 
-# SOLUCIÓN B: Cambiar directorio logs
+# Opción B: Mover logs fuera OneDrive
 # Editar .env:
-LOG_FILE=C:/Users/TuUsuario/Documents/PETS/logs/pets.log
+LOG_FILE=E:/Temp/PETS/logs/pets.log
 
-# SOLUCIÓN C: Deshabilitar antivirus temporalmente (desarrollo)
-```
-
-### Problema: Line endings CRLF vs LF
-
-```bash
-# SÍNTOMA: Errores raros en scripts
-
-# SOLUCIÓN: Configurar Git para Windows
-git config --global core.autocrlf true
-
-# Reconvertir archivos:
-git rm --cached -r .
-git reset --hard
+# Crear directorio:
+mkdir -p /e/Temp/PETS/logs
 ```
 
 ---
 
 ## 🎯 CHECKLIST FINAL WINDOWS
 
-### Antes de Empezar
+### Tu Configuración Específica
 
-- [ ] Python 3.11+ instalado
-- [ ] "Add to PATH" marcado en instalación Python
-- [ ] Git Bash instalado y funcional
-- [ ] 10GB+ espacio disco libre
-- [ ] Antivirus no bloqueando Python
+- [ ] **Ruta proyecto:** `E:\OneDrive\Escritorio\Bots\PETS`
+- [ ] **Git Bash path:** `/e/OneDrive/Escritorio/Bots/PETS`
+- [ ] Python 3.11+ instalado con "Add to PATH"
+- [ ] Git Bash instalado
+- [ ] 10GB+ espacio en E:
 
 ### Configuración Completada
 
-- [ ] Repositorio clonado en `/c/Users/.../PETS`
+- [ ] Repositorio en `/e/OneDrive/Escritorio/Bots/PETS`
 - [ ] Entorno virtual creado (`venv/` existe)
 - [ ] venv activado (`(venv)` en prompt)
-- [ ] Dependencias instaladas (`pip list` muestra streamlit, etc.)
-- [ ] Archivo `.env` configurado (copiar/pegar config mínima)
+- [ ] Dependencias instaladas
+- [ ] Archivo `.env` configurado
 - [ ] Directorios `logs/` y `data/` creados
 
 ### Sistema Funcionando
 
 - [ ] **Ventana Git Bash #1:** Bot corriendo, logs visibles
-- [ ] **Ventana Git Bash #2:** Dashboard corriendo, URL visible
-- [ ] **Navegador:** Dashboard en http://localhost:8501 cargado
+- [ ] **Ventana Git Bash #2:** Dashboard corriendo
+- [ ] **Navegador:** http://localhost:8501 cargado
 - [ ] Métricas actualizándose cada 1-2 segundos
 - [ ] Archivos en `logs/paper_trading_reports/` generándose
-
-### Monitoreo Activo
-
-- [ ] Dashboard accesible todos los días
-- [ ] Reportes diarios revisados
-- [ ] No errores críticos en logs
-- [ ] Bot corre continuo 24/7
-
----
-
-## 🆘 SOPORTE WINDOWS
-
-### Recursos Específicos Windows
-
-**Python Windows:**
-- https://docs.python.org/3/using/windows.html
-- https://www.python.org/downloads/windows/
-
-**Git Bash:**
-- https://git-scm.com/download/win
-- https://www.atlassian.com/git/tutorials/git-bash
-
-**Streamlit Windows:**
-- https://docs.streamlit.io/get-started/installation/windows
-
-### Comandos Útiles Git Bash en Windows
-
-```bash
-# Abrir explorador Windows en directorio actual
-explorer.exe .
-
-# Abrir archivo con programa predeterminado
-start archivo.txt
-
-# Ver información sistema
-systeminfo | head -20
-
-# Limpiar pantalla
-clear
-# O: Ctrl+L
-
-# Historial comandos
-history
-
-# Buscar en historial
-history | grep python
-```
 
 ---
 
 ## 📞 PRÓXIMOS PASOS
 
-**AHORA deberías tener (Windows + Git Bash):**
+**AHORA deberías tener:**
 
 ✅ **2 Ventanas Git Bash abiertas:**
-- Ventana #1: Bot 8 corriendo con logs visibles
-- Ventana #2: Streamlit dashboard activo
+- Ventana #1: Bot 8 en `/e/OneDrive/Escritorio/Bots/PETS`
+- Ventana #2: Dashboard en `../src/presentation/dashboard`
 
 ✅ **Navegador:**
 - Dashboard en http://localhost:8501
 - Métricas actualizándose en vivo
 
 ✅ **Sistema paper trading:**
+- Archivos en `E:\OneDrive\Escritorio\Bots\PETS\logs\`
 - Sin wallet real (CERO riesgo)
 - Simulación 30 días automática
-- Reportes diarios generándose
 
 ---
 
-**¿TODO FUNCIONANDO?** Confirma que ves:
+**¿TODO FUNCIONANDO EN TU RUTA E:\OneDrive\Escritorio\Bots\PETS?**
+
+Confirma que ves:
 1. Logs bot en Ventana #1
 2. Dashboard cargado en navegador
 3. Métricas actualizándose
@@ -921,5 +881,6 @@ Y te explico el siguiente paso de monitoreo diario.
 ---
 
 **Last Updated:** 2026-02-13  
-**Version:** 1.0 Windows  
-**Tested:** Windows 10/11 + Git Bash + Python 3.11
+**Version:** 1.1 - User-Specific Path  
+**Tested:** Windows 10/11 + Git Bash + Python 3.11  
+**User Path:** `E:\OneDrive\Escritorio\Bots\PETS`
