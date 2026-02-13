@@ -1,202 +1,109 @@
-"""Position routes."""
+"""Position management routes.
 
-import logging
-from uuid import UUID
+Author: Juan [juankaspain]
+Created: 2026-02-13
+"""
 
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 
-from src.presentation.api.dependencies import TimescaleDB
-from src.presentation.api.schemas.position import PositionClose, PositionResponse
+from src.application.use_cases import ClosePositionUseCase
+from src.presentation.api.dependencies import (
+    get_close_position_use_case,
+    get_position_repository,
+)
+from src.presentation.api.schemas import (
+    ClosePositionRequest,
+    PositionListResponse,
+    PositionResponse,
+)
 
-logger = logging.getLogger(__name__)
-
-router = APIRouter()
+router = APIRouter(prefix="/positions", tags=["positions"])
 
 
-@router.get("", response_model=list[PositionResponse])
+@router.get("", response_model=PositionListResponse)
 async def list_positions(
-    db: TimescaleDB,
     bot_id: int | None = Query(None, description="Filter by bot ID"),
     status: str | None = Query(None, description="Filter by status (open/closed)"),
-    limit: int = Query(100, ge=1, le=1000, description="Maximum results"),
-):
+    limit: int = Query(100, ge=1, le=1000, description="Max results"),
+    position_repo=Depends(get_position_repository),
+) -> PositionListResponse:
     """List positions.
-
+    
     Args:
-        db: TimescaleDB client
-        bot_id: Filter by bot ID
-        status: Filter by status
+        bot_id: Optional bot filter
+        status: Optional status filter
         limit: Maximum results
-
+    
     Returns:
         List of positions
     """
-    # Build query
-    conditions = []
-    params = []
-    param_count = 1
-
-    if bot_id is not None:
-        conditions.append(f"bot_id = ${param_count}")
-        params.append(bot_id)
-        param_count += 1
-
-    if status == "open":
-        conditions.append("closed_at IS NULL")
-    elif status == "closed":
-        conditions.append("closed_at IS NOT NULL")
-
-    where_clause = "WHERE " + " AND ".join(conditions) if conditions else ""
-
-    query = f"""
-        SELECT position_id, bot_id, order_id, market_id, side, size, entry_price, zone,
-               opened_at, current_price, realized_pnl, unrealized_pnl, closed_at
-        FROM positions
-        {where_clause}
-        ORDER BY opened_at DESC
-        LIMIT ${param_count}
-    """
-    params.append(limit)
-
-    rows = await db.pool.fetch(query, *params)
-
-    return [
-        PositionResponse(
-            position_id=row["position_id"],
-            bot_id=row["bot_id"],
-            order_id=row["order_id"],
-            market_id=row["market_id"],
-            side=row["side"],
-            size=row["size"],
-            entry_price=row["entry_price"],
-            zone=row["zone"],
-            opened_at=row["opened_at"],
-            current_price=row["current_price"],
-            realized_pnl=row["realized_pnl"],
-            unrealized_pnl=row["unrealized_pnl"],
-            closed_at=row["closed_at"],
-        )
-        for row in rows
-    ]
+    if bot_id:
+        if status == "open":
+            positions = await position_repo.find_open_by_bot(bot_id)
+        else:
+            positions = await position_repo.find_by_bot_id(bot_id, limit=limit)
+    else:
+        positions = await position_repo.find_all(limit=limit)
+    
+    return PositionListResponse(
+        positions=[PositionResponse.model_validate(p) for p in positions],
+        total=len(positions),
+    )
 
 
 @router.get("/{position_id}", response_model=PositionResponse)
 async def get_position(
-    position_id: UUID,
-    db: TimescaleDB,
-):
-    """Get position by ID.
-
+    position_id: str,
+    position_repo=Depends(get_position_repository),
+) -> PositionResponse:
+    """Get position details.
+    
     Args:
-        position_id: Position ID
-        db: TimescaleDB client
-
+        position_id: Position identifier
+    
     Returns:
         Position details
+    
+    Raises:
+        HTTPException: If position not found
     """
-    query = """
-        SELECT position_id, bot_id, order_id, market_id, side, size, entry_price, zone,
-               opened_at, current_price, realized_pnl, unrealized_pnl, closed_at
-        FROM positions
-        WHERE position_id = $1
-    """
-
-    row = await db.pool.fetchrow(query, position_id)
-
-    if not row:
-        raise HTTPException(
-            status_code=404, detail=f"Position {position_id} not found"
-        )
-
-    return PositionResponse(
-        position_id=row["position_id"],
-        bot_id=row["bot_id"],
-        order_id=row["order_id"],
-        market_id=row["market_id"],
-        side=row["side"],
-        size=row["size"],
-        entry_price=row["entry_price"],
-        zone=row["zone"],
-        opened_at=row["opened_at"],
-        current_price=row["current_price"],
-        realized_pnl=row["realized_pnl"],
-        unrealized_pnl=row["unrealized_pnl"],
-        closed_at=row["closed_at"],
-    )
-
-
-@router.put("/{position_id}/close", response_model=PositionResponse)
-async def close_position(
-    position_id: UUID,
-    close_data: PositionClose,
-    db: TimescaleDB,
-):
-    """Close position.
-
-    Args:
-        position_id: Position ID
-        close_data: Close data
-        db: TimescaleDB client
-
-    Returns:
-        Closed position
-    """
-    logger.info(
-        "Closing position",
-        extra={
-            "position_id": str(position_id),
-            "exit_price": float(close_data.exit_price),
-        },
-    )
-
-    # Calculate realized P&L (simplified)
-    get_query = """
-        SELECT entry_price, size, side
-        FROM positions
-        WHERE position_id = $1 AND closed_at IS NULL
-    """
-
-    position = await db.pool.fetchrow(get_query, position_id)
-
+    position = await position_repo.find_by_id(position_id)
     if not position:
         raise HTTPException(
-            status_code=400,
-            detail=f"Position {position_id} not found or already closed",
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Position {position_id} not found",
         )
+    return PositionResponse.model_validate(position)
 
-    # Calculate P&L
-    entry_price = position["entry_price"]
-    size = position["size"]
-    side = position["side"]
 
-    if side == "BUY":
-        realized_pnl = (close_data.exit_price - entry_price) * size
-    else:
-        realized_pnl = (entry_price - close_data.exit_price) * size
-
-    # Update position
-    update_query = """
-        UPDATE positions
-        SET realized_pnl = $1, closed_at = NOW(), updated_at = NOW()
-        WHERE position_id = $2
-        RETURNING position_id, bot_id, order_id, market_id, side, size, entry_price, zone,
-                  opened_at, current_price, realized_pnl, unrealized_pnl, closed_at
+@router.post("/{position_id}/close", status_code=status.HTTP_202_ACCEPTED)
+async def close_position(
+    position_id: str,
+    request: ClosePositionRequest,
+    close_use_case: ClosePositionUseCase = Depends(get_close_position_use_case),
+) -> dict[str, str]:
+    """Close position.
+    
+    Args:
+        position_id: Position identifier
+        request: Close request with optional reason
+    
+    Returns:
+        Status message
+    
+    Raises:
+        HTTPException: If position not found or cannot close
     """
-
-    row = await db.pool.fetchrow(update_query, realized_pnl, position_id)
-
-    return PositionResponse(
-        position_id=row["position_id"],
-        bot_id=row["bot_id"],
-        order_id=row["order_id"],
-        market_id=row["market_id"],
-        side=row["side"],
-        size=row["size"],
-        entry_price=row["entry_price"],
-        zone=row["zone"],
-        opened_at=row["opened_at"],
-        current_price=row["current_price"],
-        realized_pnl=row["realized_pnl"],
-        unrealized_pnl=row["unrealized_pnl"],
-        closed_at=row["closed_at"],
-    )
+    try:
+        await close_use_case.execute(position_id, request.reason)
+        return {"status": "closing", "position_id": position_id}
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=str(e),
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to close position: {str(e)}",
+        )

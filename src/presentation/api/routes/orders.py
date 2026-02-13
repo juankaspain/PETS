@@ -1,222 +1,115 @@
-"""Order routes."""
+"""Order management routes.
 
-import logging
-from uuid import UUID
+Author: Juan [juankaspain]
+Created: 2026-02-13
+"""
 
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 
-from src.application.use_cases.place_order import PlaceOrderUseCase
-from src.infrastructure.repositories.order_repository import OrderRepository
-from src.presentation.api.dependencies import RiskCalc, TimescaleDB
-from src.presentation.api.schemas.order import OrderCancel, OrderCreate, OrderResponse
+from src.application.use_cases import PlaceOrderUseCase
+from src.presentation.api.dependencies import (
+    get_order_repository,
+    get_place_order_use_case,
+)
+from src.presentation.api.schemas import (
+    OrderListResponse,
+    OrderResponse,
+    PlaceOrderRequest,
+)
 
-logger = logging.getLogger(__name__)
-
-router = APIRouter()
-
-
-@router.post("", response_model=dict, status_code=201)
-async def place_order(
-    order: OrderCreate,
-    db: TimescaleDB,
-    risk_calc: RiskCalc,
-):
-    """Place a new order.
-
-    Args:
-        order: Order data
-        db: TimescaleDB client
-        risk_calc: Risk calculator
-
-    Returns:
-        Order ID
-    """
-    logger.info(
-        "Placing order",
-        extra={
-            "bot_id": order.bot_id,
-            "market_id": order.market_id,
-            "side": order.side,
-            "size": float(order.size),
-            "price": float(order.price),
-        },
-    )
-
-    # Create repository and use case
-    order_repo = OrderRepository(db, None)  # Redis not needed for this example
-    use_case = PlaceOrderUseCase(order_repo, risk_calc)
-
-    # Execute use case
-    order_id = await use_case.execute(
-        bot_id=order.bot_id,
-        market_id=order.market_id,
-        side=order.side,
-        size=order.size,
-        price=order.price,
-        zone=order.zone,
-        portfolio_value=10000,  # TODO: Get from wallet
-        post_only=order.post_only,
-    )
-
-    return {"order_id": str(order_id)}
+router = APIRouter(prefix="/orders", tags=["orders"])
 
 
-@router.get("", response_model=list[OrderResponse])
+@router.get("", response_model=OrderListResponse)
 async def list_orders(
-    db: TimescaleDB,
     bot_id: int | None = Query(None, description="Filter by bot ID"),
     status: str | None = Query(None, description="Filter by status"),
-    limit: int = Query(100, ge=1, le=1000, description="Maximum results"),
-):
+    limit: int = Query(100, ge=1, le=1000, description="Max results"),
+    order_repo=Depends(get_order_repository),
+) -> OrderListResponse:
     """List orders.
-
+    
     Args:
-        db: TimescaleDB client
-        bot_id: Filter by bot ID
-        status: Filter by status
+        bot_id: Optional bot filter
+        status: Optional status filter
         limit: Maximum results
-
+    
     Returns:
         List of orders
     """
-    # Build query
-    conditions = []
-    params = []
-    param_count = 1
-
-    if bot_id is not None:
-        conditions.append(f"bot_id = ${param_count}")
-        params.append(bot_id)
-        param_count += 1
-
-    if status is not None:
-        conditions.append(f"status = ${param_count}")
-        params.append(status)
-        param_count += 1
-
-    where_clause = "WHERE " + " AND ".join(conditions) if conditions else ""
-
-    query = f"""
-        SELECT order_id, bot_id, market_id, side, size, price, zone, status, post_only,
-               created_at, updated_at, filled_size
-        FROM orders
-        {where_clause}
-        ORDER BY created_at DESC
-        LIMIT ${param_count}
-    """
-    params.append(limit)
-
-    rows = await db.pool.fetch(query, *params)
-
-    return [
-        OrderResponse(
-            order_id=row["order_id"],
-            bot_id=row["bot_id"],
-            market_id=row["market_id"],
-            side=row["side"],
-            size=row["size"],
-            price=row["price"],
-            zone=row["zone"],
-            status=row["status"],
-            post_only=row["post_only"],
-            created_at=row["created_at"],
-            updated_at=row["updated_at"],
-            filled_size=row["filled_size"],
-        )
-        for row in rows
-    ]
+    if bot_id:
+        orders = await order_repo.find_by_bot_id(bot_id, limit=limit)
+    else:
+        orders = await order_repo.find_all(limit=limit)
+    
+    # Filter by status if provided
+    if status:
+        orders = [o for o in orders if o.status.value == status]
+    
+    return OrderListResponse(
+        orders=[OrderResponse.model_validate(o) for o in orders],
+        total=len(orders),
+    )
 
 
 @router.get("/{order_id}", response_model=OrderResponse)
 async def get_order(
-    order_id: UUID,
-    db: TimescaleDB,
-):
-    """Get order by ID.
-
+    order_id: str,
+    order_repo=Depends(get_order_repository),
+) -> OrderResponse:
+    """Get order details.
+    
     Args:
-        order_id: Order ID
-        db: TimescaleDB client
-
+        order_id: Order identifier
+    
     Returns:
         Order details
+    
+    Raises:
+        HTTPException: If order not found
     """
-    query = """
-        SELECT order_id, bot_id, market_id, side, size, price, zone, status, post_only,
-               created_at, updated_at, filled_size
-        FROM orders
-        WHERE order_id = $1
-    """
-
-    row = await db.pool.fetchrow(query, order_id)
-
-    if not row:
-        raise HTTPException(status_code=404, detail=f"Order {order_id} not found")
-
-    return OrderResponse(
-        order_id=row["order_id"],
-        bot_id=row["bot_id"],
-        market_id=row["market_id"],
-        side=row["side"],
-        size=row["size"],
-        price=row["price"],
-        zone=row["zone"],
-        status=row["status"],
-        post_only=row["post_only"],
-        created_at=row["created_at"],
-        updated_at=row["updated_at"],
-        filled_size=row["filled_size"],
-    )
-
-
-@router.put("/{order_id}/cancel", response_model=OrderResponse)
-async def cancel_order(
-    order_id: UUID,
-    cancel_data: OrderCancel,
-    db: TimescaleDB,
-):
-    """Cancel order.
-
-    Args:
-        order_id: Order ID
-        cancel_data: Cancel data
-        db: TimescaleDB client
-
-    Returns:
-        Cancelled order
-    """
-    logger.info(
-        "Cancelling order",
-        extra={"order_id": str(order_id), "reason": cancel_data.reason},
-    )
-
-    query = """
-        UPDATE orders
-        SET status = 'CANCELLED', updated_at = NOW()
-        WHERE order_id = $1 AND status IN ('PENDING', 'SUBMITTED', 'OPEN', 'PARTIALLY_FILLED')
-        RETURNING order_id, bot_id, market_id, side, size, price, zone, status, post_only,
-                  created_at, updated_at, filled_size
-    """
-
-    row = await db.pool.fetchrow(query, order_id)
-
-    if not row:
+    order = await order_repo.find_by_id(order_id)
+    if not order:
         raise HTTPException(
-            status_code=400,
-            detail=f"Order {order_id} not found or cannot be cancelled",
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Order {order_id} not found",
         )
+    return OrderResponse.model_validate(order)
 
-    return OrderResponse(
-        order_id=row["order_id"],
-        bot_id=row["bot_id"],
-        market_id=row["market_id"],
-        side=row["side"],
-        size=row["size"],
-        price=row["price"],
-        zone=row["zone"],
-        status=row["status"],
-        post_only=row["post_only"],
-        created_at=row["created_at"],
-        updated_at=row["updated_at"],
-        filled_size=row["filled_size"],
-    )
+
+@router.post("", response_model=OrderResponse, status_code=status.HTTP_201_CREATED)
+async def place_order(
+    request: PlaceOrderRequest,
+    place_use_case: PlaceOrderUseCase = Depends(get_place_order_use_case),
+) -> OrderResponse:
+    """Place new order.
+    
+    Args:
+        request: Order placement request
+    
+    Returns:
+        Created order details
+    
+    Raises:
+        HTTPException: If order rejected or validation fails
+    """
+    try:
+        order = await place_use_case.execute(
+            bot_id=request.bot_id,
+            market_id=request.market_id,
+            side=request.side,
+            price=request.price,
+            size=request.size,
+            post_only=request.post_only,
+        )
+        return OrderResponse.model_validate(order)
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e),
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to place order: {str(e)}",
+        )

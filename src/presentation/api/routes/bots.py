@@ -1,210 +1,185 @@
-"""Bot routes."""
+"""Bot management routes.
 
-import logging
-from decimal import Decimal
+Author: Juan [juankaspain]
+Created: 2026-02-13
+"""
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, status
 
-from src.presentation.api.dependencies import TimescaleDB
-from src.presentation.api.schemas.bot import BotCreate, BotResponse, BotStateUpdate
+from src.presentation.api.dependencies import (
+    get_bot_orchestrator,
+    get_bot_repository,
+)
+from src.presentation.api.schemas import (
+    BotConfigUpdate,
+    BotListResponse,
+    BotResponse,
+)
 
-logger = logging.getLogger(__name__)
-
-router = APIRouter()
-
-
-@router.post("", response_model=BotResponse, status_code=201)
-async def create_bot(
-    bot: BotCreate,
-    db: TimescaleDB,
-):
-    """Create a new bot.
-
-    Args:
-        bot: Bot creation data
-        db: TimescaleDB client
-
-    Returns:
-        Created bot
-    """
-    logger.info(
-        "Creating bot",
-        extra={
-            "strategy_type": bot.strategy_type,
-            "capital": float(bot.capital_allocated),
-        },
-    )
-
-    # Create bot (simplified - real implementation uses BotRepository)
-    query = """
-        INSERT INTO bots (strategy_type, state, config, capital_allocated)
-        VALUES ($1, $2, $3, $4)
-        RETURNING bot_id, strategy_type, state, config, capital_allocated, created_at, updated_at
-    """
-
-    import json
-
-    from datetime import datetime
-
-    row = await db.pool.fetchrow(
-        query,
-        bot.strategy_type,
-        "IDLE",
-        json.dumps(bot.config),
-        bot.capital_allocated,
-    )
-
-    return BotResponse(
-        bot_id=row["bot_id"],
-        strategy_type=row["strategy_type"],
-        state=row["state"],
-        config=json.loads(row["config"]),
-        capital_allocated=row["capital_allocated"],
-        created_at=row["created_at"],
-        updated_at=row["updated_at"],
-    )
+router = APIRouter(prefix="/bots", tags=["bots"])
 
 
-@router.get("", response_model=list[BotResponse])
+@router.get("", response_model=BotListResponse)
 async def list_bots(
-    db: TimescaleDB,
-    limit: int = 100,
-):
+    bot_repo=Depends(get_bot_repository),
+) -> BotListResponse:
     """List all bots.
-
-    Args:
-        db: TimescaleDB client
-        limit: Maximum number of bots to return
-
+    
     Returns:
-        List of bots
+        List of all bots with their current status
     """
-    query = """
-        SELECT bot_id, strategy_type, state, config, capital_allocated, created_at, updated_at
-        FROM bots
-        ORDER BY created_at DESC
-        LIMIT $1
-    """
-
-    import json
-
-    rows = await db.pool.fetch(query, limit)
-
-    return [
-        BotResponse(
-            bot_id=row["bot_id"],
-            strategy_type=row["strategy_type"],
-            state=row["state"],
-            config=json.loads(row["config"]),
-            capital_allocated=row["capital_allocated"],
-            created_at=row["created_at"],
-            updated_at=row["updated_at"],
-        )
-        for row in rows
-    ]
+    bots = await bot_repo.find_all()
+    return BotListResponse(
+        bots=[BotResponse.model_validate(bot) for bot in bots],
+        total=len(bots),
+    )
 
 
 @router.get("/{bot_id}", response_model=BotResponse)
 async def get_bot(
     bot_id: int,
-    db: TimescaleDB,
-):
-    """Get bot by ID.
-
+    bot_repo=Depends(get_bot_repository),
+) -> BotResponse:
+    """Get bot details.
+    
     Args:
-        bot_id: Bot ID
-        db: TimescaleDB client
-
+        bot_id: Bot identifier
+    
     Returns:
-        Bot details
+        Bot details including metrics
+    
+    Raises:
+        HTTPException: If bot not found
     """
-    query = """
-        SELECT bot_id, strategy_type, state, config, capital_allocated, created_at, updated_at
-        FROM bots
-        WHERE bot_id = $1
-    """
-
-    import json
-
-    row = await db.pool.fetchrow(query, bot_id)
-
-    if not row:
-        raise HTTPException(status_code=404, detail=f"Bot {bot_id} not found")
-
-    return BotResponse(
-        bot_id=row["bot_id"],
-        strategy_type=row["strategy_type"],
-        state=row["state"],
-        config=json.loads(row["config"]),
-        capital_allocated=row["capital_allocated"],
-        created_at=row["created_at"],
-        updated_at=row["updated_at"],
-    )
+    bot = await bot_repo.find_by_id(bot_id)
+    if not bot:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Bot {bot_id} not found",
+        )
+    return BotResponse.model_validate(bot)
 
 
-@router.put("/{bot_id}/state", response_model=BotResponse)
-async def update_bot_state(
+@router.post("/{bot_id}/start", status_code=status.HTTP_202_ACCEPTED)
+async def start_bot(
     bot_id: int,
-    state_update: BotStateUpdate,
-    db: TimescaleDB,
-):
-    """Update bot state.
-
+    orchestrator=Depends(get_bot_orchestrator),
+) -> dict[str, str]:
+    """Start bot.
+    
     Args:
-        bot_id: Bot ID
-        state_update: New state
-        db: TimescaleDB client
-
+        bot_id: Bot identifier
+    
     Returns:
-        Updated bot
+        Status message
+    
+    Raises:
+        HTTPException: If bot not found or cannot start
     """
-    logger.info(
-        "Updating bot state",
-        extra={"bot_id": bot_id, "new_state": state_update.state},
-    )
-
-    query = """
-        UPDATE bots
-        SET state = $1, updated_at = NOW()
-        WHERE bot_id = $2
-        RETURNING bot_id, strategy_type, state, config, capital_allocated, created_at, updated_at
-    """
-
-    import json
-
-    row = await db.pool.fetchrow(query, state_update.state, bot_id)
-
-    if not row:
-        raise HTTPException(status_code=404, detail=f"Bot {bot_id} not found")
-
-    return BotResponse(
-        bot_id=row["bot_id"],
-        strategy_type=row["strategy_type"],
-        state=row["state"],
-        config=json.loads(row["config"]),
-        capital_allocated=row["capital_allocated"],
-        created_at=row["created_at"],
-        updated_at=row["updated_at"],
-    )
+    try:
+        await orchestrator.start_bot(bot_id)
+        return {"status": "starting", "bot_id": str(bot_id)}
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=str(e),
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to start bot: {str(e)}",
+        )
 
 
-@router.delete("/{bot_id}", status_code=204)
-async def delete_bot(
+@router.post("/{bot_id}/stop", status_code=status.HTTP_202_ACCEPTED)
+async def stop_bot(
     bot_id: int,
-    db: TimescaleDB,
-):
-    """Delete bot.
-
+    orchestrator=Depends(get_bot_orchestrator),
+) -> dict[str, str]:
+    """Stop bot.
+    
     Args:
-        bot_id: Bot ID
-        db: TimescaleDB client
+        bot_id: Bot identifier
+    
+    Returns:
+        Status message
+    
+    Raises:
+        HTTPException: If bot not found or cannot stop
     """
-    logger.info("Deleting bot", extra={"bot_id": bot_id})
+    try:
+        await orchestrator.stop_bot(bot_id)
+        return {"status": "stopping", "bot_id": str(bot_id)}
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=str(e),
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to stop bot: {str(e)}",
+        )
 
-    query = "DELETE FROM bots WHERE bot_id = $1"
-    result = await db.pool.execute(query, bot_id)
 
-    if result == "DELETE 0":
-        raise HTTPException(status_code=404, detail=f"Bot {bot_id} not found")
+@router.post("/{bot_id}/pause", status_code=status.HTTP_202_ACCEPTED)
+async def pause_bot(
+    bot_id: int,
+    orchestrator=Depends(get_bot_orchestrator),
+) -> dict[str, str]:
+    """Pause bot.
+    
+    Args:
+        bot_id: Bot identifier
+    
+    Returns:
+        Status message
+    
+    Raises:
+        HTTPException: If bot not found or cannot pause
+    """
+    try:
+        await orchestrator.pause_bot(bot_id)
+        return {"status": "paused", "bot_id": str(bot_id)}
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=str(e),
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to pause bot: {str(e)}",
+        )
 
-    return None
+
+@router.put("/{bot_id}/config", response_model=BotResponse)
+async def update_bot_config(
+    bot_id: int,
+    config: BotConfigUpdate,
+    bot_repo=Depends(get_bot_repository),
+) -> BotResponse:
+    """Update bot configuration.
+    
+    Args:
+        bot_id: Bot identifier
+        config: New configuration values
+    
+    Returns:
+        Updated bot details
+    
+    Raises:
+        HTTPException: If bot not found or config invalid
+    """
+    bot = await bot_repo.find_by_id(bot_id)
+    if not bot:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Bot {bot_id} not found",
+        )
+    
+    # Update config
+    bot.config.update(config.config)
+    await bot_repo.update(bot)
+    
+    return BotResponse.model_validate(bot)
