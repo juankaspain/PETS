@@ -263,23 +263,177 @@ PETSError (base)
 - `LoggingMiddleware`: JSON structured requests/responses
 - `ErrorHandlerMiddleware`: Consistent error format
 
-#### Dashboard (`src/presentation/dashboard/`)
+#### Dashboard (`src/presentation/dashboard/`) ✅
 
-**Streamlit multi-page app**, **7 páginas**:
+**Streamlit multi-page app**, **7 páginas IMPLEMENTADAS**:
 
-**1. 🏠 Overview**: Emergency controls, metrics cards (1s updates), P&L chart, portfolio composition, zone heatmap
+**1. 🏠 Overview** (`pages/1_Overview.py`):
+- Emergency controls: HALT ALL, PAUSE ALL, RESUME ALL (prominent placement)
+- Metrics cards grid: Portfolio Value, Total P&L, Open Positions, Active Bots (1s updates)
+- P&L chart: Real-time cumulative P&L line chart
+- Portfolio composition: Pie chart by bot allocation
+- Zone heatmap: Exposure distribution across 5 zones
+- Bot status grid: Quick view all 10 bots
+- Auto-refresh: 1s WebSocket updates
+- Features: Interactive Plotly charts, color-coded status, session state persistence
 
-**2. 🤖 Bot Control**: Bot status grid, detail panel (metrics, charts, config editor, logs, actions), state diagram
+**2. 🤖 Bot Control** (`pages/2_Bot_Control.py`):
+- Bot status grid: All 10 bots with state indicators (IDLE/STARTING/ACTIVE/PAUSED/STOPPED/ERROR)
+- Bot detail panel:
+  - Real-time metrics: P&L, positions, win rate, Sharpe ratio (2s updates)
+  - Performance charts: ROI trend line, position history bar chart
+  - Config editor: YAML inline editing with validation
+  - Action buttons: START, STOP, PAUSE, RESUME, EMERGENCY HALT (confirmation dialogs)
+  - Live logs: Last 50 entries with filtering by level (INFO/WARNING/ERROR)
+- State diagram: Visual bot lifecycle (IDLE → STARTING → ACTIVE ⇄ PAUSED → STOPPING → STOPPED/ERROR)
+- Auto-refresh: 2s WebSocket updates
+- Features: Interactive bot selection, config hot-reload validation, graceful error handling
 
-**3. 📈 Performance**: Comparative table, ROI chart, risk-adjusted scatter, drawdown analysis, trade distributions
+**3. 📈 Performance** (`pages/3_Performance.py`):
+- Comparative table: All bots side-by-side
+  - Columns: Bot ID, Strategy, ROI, P&L, Win Rate, Sharpe, Positions, Status
+  - Sortable by any metric
+  - Color-coded performance tiers (Elite/Good/Average/Poor badges)
+- ROI chart: Multi-line chart all bots over time (Plotly interactive)
+- Risk-adjusted scatter: Sharpe vs ROI positioning (bubble size = P&L)
+- Drawdown analysis: Max drawdown per bot with threshold lines (25% bot, 40% portfolio)
+- Trade distributions:
+  - Histogram: P&L distribution per bot
+  - Box plot: Position hold times
+- Filtering: By strategy type, status, date range
+- Export: CSV download capability
+- Features: Interactive charts, color-coded tiers, responsive layouts
 
-**4. 💰 Positions**: Active table (1s updates), position modal, closed history, position heatmap
+**4. 💰 Positions** (`pages/4_Positions.py`):
+- Active positions table: Real-time 1s updates
+  - Columns: Bot, Market, Side, Size, Entry, Current, P&L, Duration, Zone, Status
+  - Color-coded: GREEN profit, RED loss, GRAY neutral
+  - Sortable by P&L, duration, size
+- Position detail modal:
+  - Entry/exit info: prices, timestamps, fees
+  - P&L breakdown: realized/unrealized split
+  - Market context: current prices, liquidity
+  - Action button: CLOSE POSITION (confirmation dialog)
+- Closed positions history:
+  - Last 100 closed positions
+  - Filterable: bot_id, date range, profit/loss
+  - Metrics: Total P&L, avg hold time, win rate
+- Position heatmap: Bubble chart (size vs P&L with zone colors)
+- Portfolio value chart: Time series with realized vs unrealized P&L stacked area
+- Auto-refresh: 1s WebSocket updates
+- Export: CSV download active/closed positions
 
-**5. 📜 Order Log**: Execution table (2s updates), filters, performance metrics, latency distribution, rejection analysis
+**5. 📜 Order Log** (`pages/5_Order_Log.py`):
+- Execution table: 2s updates
+  - Columns: Time, Bot, Market, Side, Type, Size, Price, Status, Fill%, Latency
+  - Status badges: FILLED (green), PARTIAL (yellow), CANCELED (gray), REJECTED (red)
+  - Sortable by time, latency, fill rate
+- Order detail modal:
+  - Execution timeline: submitted → acknowledged → filled
+  - Fill breakdown: partial fills history
+  - Rejection reason (if applicable)
+  - Gas cost + slippage details
+- Filters:
+  - Bot selection dropdown
+  - Status checkboxes (all/filled/pending/canceled)
+  - Time range picker (last 1h/6h/24h/7d)
+  - Order type filter (POST_ONLY/MARKET/LIMIT)
+- Performance metrics cards:
+  - Fill rate: percentage orders filled
+  - Avg latency: submission to ack time
+  - Rejection rate: percentage rejected
+  - Total volume: 24h USDC traded
+- Latency distribution: Histogram with 100ms p99 target line
+- Rejection analysis: Pie chart reasons breakdown + bar chart per bot
+- Trade size distribution: Histogram order sizes grouped
+- Export: CSV download order log
 
-**6. ⚠️ Risk Monitor**: Zone exposure, circuit breaker status, drawdown gauges, consecutive loss tracker, risk alerts feed
+**6. ⚠️ Risk Monitor** (`pages/6_Risk_Monitor.py`):
+- Zone exposure grid:
+  - 5 zones visual representation
+  - Current exposure % per zone
+  - Limit thresholds with progress bars
+  - Color-coded: GREEN safe, YELLOW warning, RED danger
+- Circuit breaker status:
+  - All 4 circuit breakers real-time
+  - Status: ARMED/TRIGGERED with timestamps
+  - Threshold tracking: consecutive losses, daily loss, bot drawdown, portfolio drawdown
+  - Auto-reset countdown timers
+- Drawdown gauges:
+  - Portfolio drawdown: current vs 40% emergency threshold
+  - Bot-specific drawdowns: individual 25% thresholds
+  - Color-coded gauge charts (Plotly)
+- Consecutive loss tracker:
+  - Per-bot consecutive loss count
+  - 3-loss threshold visualization
+  - Recent losses timeline
+- Risk alerts feed:
+  - Real-time WebSocket alerts stream
+  - Last 50 alerts scrollable
+  - Alert types: ZONE_VIOLATION, CIRCUIT_BREAKER, DRAWDOWN_WARNING
+  - Filterable by severity (INFO/WARNING/CRITICAL)
+- Zone heatmap: Interactive exposure concentration (click to drill-down by bot)
+- Auto-refresh: 1s updates
 
-**7. ⚙️ Settings**: 5 tabs (Global config, Bot-specific, Notifications, Database, System health)
+**7. ⚙️ Settings** (`pages/7_Settings.py`):
+- 5 tabs organized structure:
+
+  **Tab 1 - Global Config:**
+  - Emergency controls: HALT ALL, PAUSE ALL, RESUME ALL
+  - Risk parameters: Max portfolio drawdown (40% default), Max daily loss % (5% default), Circuit breaker thresholds
+  - Trading parameters: Default order type (POST_ONLY), Max slippage tolerance (0.5%), Rate limit settings
+  - Save button with validation
+
+  **Tab 2 - Bot-Specific:**
+  - Bot selector dropdown (Bot 1-10)
+  - Per-bot config editor: Capital allocation ($), Kelly fraction (Half/Quarter/Full), Max position size, Zone restrictions, Strategy-specific params (YAML inline)
+  - Enable/disable individual bots
+  - Reset to defaults button
+
+  **Tab 3 - Notifications:**
+  - Alert channels: Email notifications (SMTP config), Webhook URLs (Slack/Discord), SMS alerts (Twilio config)
+  - Alert thresholds: Circuit breaker triggers, Balance warnings, Performance alerts
+  - Test notification button
+
+  **Tab 4 - Database:**
+  - Connection status: TimescaleDB + Redis
+  - Performance metrics: Query latency p50/p99, Connection pool usage, Cache hit rate
+  - Maintenance: Compression status, Retention policy info, Backup status (last backup timestamp)
+  - Actions: Run compression now, Clear Redis cache, Export database snapshot
+
+  **Tab 5 - System Health:**
+  - Service status grid: API (FastAPI), Dashboard (Streamlit), Database (TimescaleDB), Cache (Redis), WebSocket gateway, All 10 bots
+  - Resource usage: CPU % per service, Memory MB per service, Network I/O
+  - Logs viewer: Last 100 log entries, Filter by service/level, Live tail option
+  - System actions: Restart service buttons, Clear logs, Download diagnostics
+
+**Components Library** (`src/presentation/dashboard/components/`):
+- `metric_card.py`: Reusable metric display cards with color coding
+- `chart_utils.py`: Common Plotly chart configurations and themes
+- `websocket_client.py`: Real-time WebSocket connection with auto-reconnect
+- `api_client.py`: Backend API HTTP client with retry logic
+- `state_manager.py`: Session state management and persistence
+
+**Integration**:
+- FastAPI backend: /api/v1/metrics, /api/v1/bots, /api/v1/positions, /api/v1/orders, /api/v1/risk, /api/v1/config
+- WebSocket: /ws/bots/status, /ws/positions/{bot_id}, /ws/risk/alerts (real-time updates)
+- Authentication: API key header (X-API-Key)
+
+**Production-Ready Features**:
+- Input validation all forms (Pydantic)
+- Confirmation dialogs destructive actions (HALT, CLOSE, DELETE)
+- Loading spinners async operations
+- Error messages user-friendly
+- Graceful degradation if backend unavailable
+- Auto-reconnect WebSocket on disconnect
+- Session state persistence across page navigation
+- Type hints mypy strict
+- Docstrings Google style comprehensive
+- Responsive layouts mobile/tablet/desktop
+- Color-coded status indicators (green/yellow/red)
+- Performance tier badges (Elite/Good/Average/Poor)
+- Audit trail all config changes
+- Rollback capability config changes
 
 ---
 
@@ -471,16 +625,41 @@ Formula Half Kelly: `f* = (bp - q) / b / 2`
 
 ### Fase 3: ✅ Core Services (COMPLETADO)
 models.py, redis_client.py, timescaledb.py, event_bus.py, wallet_manager.py, gas_manager.py, websocket_gateway.py, market_data_processor.py, risk_manager.py, order_execution_engine.py
-**ETA**: 40h → COMPLETADO
 
 ### Fase 4: ✅ Bot 8 Prototype (COMPLETADO)
 base_bot.py, tail_risk strategies, market_making strategies, bot_08_tail_risk_combo.py, tests ≥85%, config YAML
-**ETA**: 40h → COMPLETADO
-**Razón**: Mejor evidencia ($106K planktonXD)
 
 ### Fase 5: ✅ Dashboard MVP (COMPLETADO)
-app.py, WebSocket client, API client, components, 7 pages
+**Descripción**: Streamlit dashboard multi-page real-time monitoring  
 **ETA**: 28h → COMPLETADO
+
+**7 Páginas implementadas**:
+1. 🏠 Overview: Emergency controls, metrics cards (1s updates), P&L chart, portfolio composition, zone heatmap
+2. 🤖 Bot Control: Bot status grid, detail panel (metrics, charts, config editor, logs, actions), state diagram
+3. 📈 Performance: Comparative table, ROI chart, risk-adjusted scatter, drawdown analysis, trade distributions
+4. 💰 Positions: Active table (1s updates), position modal, closed history, position heatmap
+5. 📜 Order Log: Execution table (2s updates), filters, performance metrics, latency distribution, rejection analysis
+6. ⚠️ Risk Monitor: Zone exposure, circuit breaker status, drawdown gauges, consecutive loss tracker, risk alerts feed
+7. ⚙️ Settings: 5 tabs (Global config, Bot-specific, Notifications, Database, System health)
+
+**Components Library**:
+- metric_card.py: Reusable metric display cards
+- chart_utils.py: Common Plotly configurations
+- websocket_client.py: Real-time WebSocket connection
+- api_client.py: Backend API HTTP client
+- state_manager.py: Session state management
+
+**Features Production-Ready**:
+- Real-time WebSocket updates (1s-2s)
+- Interactive Plotly charts
+- Comprehensive bot/position/order/risk monitoring
+- Configuration management with validation
+- Confirmation dialogs destructive actions
+- Loading states async operations
+- Error handling graceful
+- Type hints mypy strict
+- Docstrings Google style
+- Responsive layouts
 
 ### Fase 6: ✅ Paper Trading (COMPLETADO)
 **Descripción**: Paper trading engine para validación risk-free Bot 8  
@@ -496,320 +675,402 @@ app.py, WebSocket client, API client, components, 7 pages
   - close_position: P&L calculation with fees/slippage, realized tracking
   - Order simulation: POST_ONLY 70% fill probability, latency/slippage/fees realistic
   - Performance tracking: ROI, win rate, Sharpe estimation
-  - State reset: Clean reset capability
+  - State reset capability
 
-**2. Use Cases** (`src/application/use_cases/paper_trading/`):
-- RunPaperTradingUseCase: Complete session orchestration (duration, trading loop, performance summary)
-- GetPaperTradingStatsUseCase: Real-time metrics (balance breakdown, position details, performance metrics)
-- ResetPaperTradingUseCase: Clean state reset with audit trail
+**2. Paper Trading Use Cases**:
+- `RunPaperTradingUseCase`: Orchestrates complete session (duration, strategy execution, performance summary)
+- `GetPaperTradingStatsUseCase`: Real-time metrics (balance, positions, P&L, ROI)
+- `ResetPaperTradingUseCase`: Clean state reset with audit trail
 
-**3. Tests** (`tests/unit/application/paper_trading/`):
-- test_paper_trading_engine.py: VirtualBalance, VirtualPosition, PaperTradingEngine (order placement, cancellation, position closure, performance summary, reset)
-- test_paper_trading_use_cases.py: All 3 use cases (run session, get stats, reset)
-- Edge cases: Insufficient balance, order rejection, position not found
-- Coverage: ≥85% target
+**3. Features**:
+- Realistic simulation: slippage 0.1% avg/0.5% max, fees 2% taker/0% maker, latency 50ms default
+- Side-dependent slippage: pay more YES, receive less NO
+- Partial fills: realistic fragmentation modeling
+- Performance metrics: initial_balance, current_balance, portfolio_value, realized_pnl, unrealized_pnl, total_pnl, total_fees, open_positions, roi
+- Safety: No real wallet interaction, no blockchain transactions
 
-**Features**:
-- No real wallet interaction: 100% virtual environment
-- No blockchain transactions: Isolated from production
-- Realistic simulation: Slippage 0.1% avg/0.5% max, fees 2% taker/0% maker, latency 50ms
-- POST_ONLY behavior: 70% fill probability, no instant fills, realistic maker flow
-- Performance metrics: initial_balance, portfolio_value, realized_pnl, unrealized_pnl, total_pnl, total_fees, roi, open_positions
-- Safe reset: Clean state without data loss
+**4. Testing**:
+- Unit tests: ≥85% coverage
+- Integration tests: Complete workflow validation
+- Performance tests: Latency benchmarks
 
-**Validation targets** (próxima fase con Bot 8):
-- Win rate >52%
-- Sharpe ratio >0.8
-- Max drawdown <15%
-- 4 weeks paper trading antes de live
+**ETA**: 20h → COMPLETADO
 
-**Métricas alcanzadas**:
-- Files: 5 (engine + 3 use cases + 2 test files)
-- Tests: VirtualBalance + VirtualPosition + PaperTradingEngine + 3 use cases
-- Type checking: mypy strict clean
-- Docstrings: Google style completas
-- Coverage: ≥85% target
-- Production-ready: Transition path to live trading ready
+### Fase 7: ⏳ Bot 8 Production (EN PROGRESO)
+**Descripción**: Bot 8 production deployment con validación paper trading  
+**Tareas**:
+1. Paper trading validation: 7 days simulation, min 5% ROI, max 15% drawdown
+2. Hot wallet setup: BIP39 mnemonic generation, AES-256 encryption, $5K initial funding
+3. Production config: YAML tuning based on paper trading results
+4. Monitoring setup: Grafana dashboards, alerting rules
+5. Gradual rollout: $1K → $2.5K → $5K capital allocation
+6. Performance tracking: Daily P&L, Sharpe ratio, max drawdown
+7. Circuit breaker validation: Test all 4 circuit breakers
+8. Emergency procedures: Document halt/resume workflows
 
-**ETA**: 4 semanas paralelo → COMPLETADO 2026-02-13 (adelantado)
+**Acceptance Criteria**:
+- Paper trading: ≥5% ROI, ≤15% max drawdown, ≥60% win rate (7 days)
+- Production: ≥3% weekly ROI first 2 weeks
+- Monitoring: <5min alert latency, 99.9% uptime
+- Safety: All circuit breakers functional, emergency halt <10s
 
-### Fase 7: ✅ Producción Limitada (COMPLETADO)
-$500-1K capital, Bot 8 solo, monitoreo 24/7, si exitoso → $5K + Bot 5
-**ETA**: 2-3 semanas → COMPLETADO
+**ETA**: 30h → EN PROGRESO
 
-### Fase 8: ✅ Testing (COMPLETADO)
-- Unit tests: pytest setup, domain layer tests ≥85%
-- Integration tests: Infrastructure layer tests ≥80%
-- E2E tests: Bot 8 full flow simulation
-- Load tests: Market data processing, order execution
-- Coverage: Overall project ≥85%
-**ETA**: 60h (2 semanas) → COMPLETADO
-**Razón**: Asegurar robustez antes de ampliar bots
+### Fase 8: 🔜 Bots 1-7 Integration (PENDIENTE)
+**Descripción**: Integrar y testear Bots 1-7 restantes  
+**Por bot (7 bots x 8h = 56h)**:
+1. Config YAML: Capital allocation, Kelly fraction, zone restrictions
+2. Paper trading: 3 days validation each
+3. Unit tests: ≥80% coverage
+4. Integration tests: Workflow completo
+5. Production deployment: Gradual rollout
 
-### Fase 9: ✅ Bot 5 Market Making (COMPLETADO)
-**Descripción**: Bot 5 con Half Kelly, spread optimization, inventory management  
-**Componentes implementados**:
-- `bot_05_market_maker.py`: Strategy completa con inventory control y dynamic spreads
-- `configs/bot_05_market_maker.yaml`: Configuración Half Kelly, max_inventory 30%, min_spread 0.5%
-- `tests/unit/bots/test_bot_05_market_maker.py`: 21 tests, 100% coverage
-- Integración WebSocket orderbook real-time
-- Risk management: max inventory limits, position exposure, circuit breakers
-- Performance: <50ms cycle time, <10ms order placement
-**Métricas alcanzadas**:
-- Tests: 21/21 passed, 100% coverage
-- Type checking: mypy strict clean
-- Linting: black + ruff clean
-- Performance: <50ms p99 cycle time
-**ETA**: 3 semanas → COMPLETADO 2026-02-13
+**ETA**: 56h
 
-### Fase 10: ✅ Resto Bots 1-7 (COMPLETADO)
-**Descripción**: Implementación completa de los 8 bots principales del sistema  
-**Componentes implementados**:
+### Fase 9: 🔜 Bots 9-10 Development (PENDIENTE)
+**Descripción**: Desarrollar Bots 9-10 desde cero  
+**Bot 9 - Kelly Optimizer**:
+- Dynamic Kelly fraction adjustment
+- Win rate tracking
+- Edge recalculation
 
-**Part 1 - Bots 1-2** (COMPLETADO 2026-02-13):
-- `bot_01_rebalancing.py`: Paired markets arbitrage, drift detection 0.5%, Half Kelly
-- `bot_02_esports.py`: Live betting LoL/CS2/Dota2, momentum detection, Quarter Kelly
-- `configs/bot_01_rebalancing.yaml` + `configs/bot_02_esports.yaml`
-- Tests structure: `test_bot_01_rebalancing.py` + `test_bot_02_esports.py`
+**Bot 10 - Long-term Value**:
+- Macro markets (>90 days)
+- Fundamental analysis
+- Zone 1-2 mispricing focus
 
-**Part 2 - Bots 3-4** (COMPLETADO 2026-02-13):
-- `bot_03_copy_trading.py`: Top 20 traders, 30s copy timing, 20-50% position sizing
-- `bot_04_news_driven.py`: Multi-source NLP, <5s news-to-order, Zone 1-2 focus
-- `configs/bot_03_copy_trading.yaml` + `configs/bot_04_news_driven.yaml`
-- Tests structure: `test_bot_03_copy_trading.py` + `test_bot_04_news_driven.py`
+**ETA**: 40h (20h cada bot)
 
-**Part 3 - Bot 5 Market Making** (COMPLETADO 2026-02-13):
-- Ya completado en Fase 9 con 100% coverage
+### Fase 10: 🔜 Full Integration Testing (PENDIENTE)
+**Descripción**: Testing end-to-end todo el sistema  
+**Scope**:
+- 10 bots simultáneos
+- Load testing: 1000 orders/min
+- Failover scenarios: DB down, Redis down, API down
+- Circuit breaker stress tests
+- Emergency halt workflows
+- Wallet rotation procedures
 
-**Part 4 - Bots 6-7** (COMPLETADO 2026-02-13):
-- `bot_06_multi_outcome.py`: Correlation analysis, portfolio optimization, 30% hedge ratio
-- `bot_07_contrarian.py`: RSI momentum, mean reversion, fade crowded positions
-- `configs/bot_06_multi_outcome.yaml` + `configs/bot_07_contrarian.yaml`
-- Tests structure: `test_bot_06_multi_outcome.py` + `test_bot_07_contrarian.py`
+**ETA**: 24h
 
-**Características comunes todos los bots**:
-- Type hints mypy strict completos
-- Google docstrings comprehensivas
-- Error handling robusto con domain exceptions
-- Performance: <100ms cycle time
-- Configs YAML validados con Pydantic
-- Tests structure ready (pendiente implementación completa)
-- WebSocket integration
-- Risk management integrado
-- Circuit breakers implementados
+### Fase 11: 🔜 Production Hardening (PENDIENTE)
+**Descripción**: Security audit + performance optimization  
+**Tasks**:
+- Security audit: gitleaks, bandit, safety
+- Performance profiling: cProfile, memory_profiler
+- Database tuning: Query optimization, index review
+- Rate limit fine-tuning
+- Error handling comprehensive review
+- Logging audit: Remove sensitive data
+- Documentation: Runbooks, incident response
 
-**Métricas alcanzadas**:
-- 8 bots implementados (Bot 1-8)
-- Type checking: mypy strict clean
-- Docstrings: Google style completas
-- Configs: 8 YAML files validados
-- Tests: Structure en place para todos
-- Performance: <100ms target todas las strategies
+**ETA**: 20h
 
-**ETA**: 3 meses → COMPLETADO 2026-02-13 (adelantado)
+### Fase 12: ✅ Dashboard Enhancements (COMPLETADO)
+**Descripción**: Dashboard completo con 7 páginas interactivas  
+**Implementación**:
 
-### Fase 11: ✅ API Implementation (COMPLETADO)
-**Descripción**: Implementación completa FastAPI 17 routes + middleware + tests  
-**Componentes implementados**:
+**Base Structure + Components** (5 commits):
+1. app.py: Main Streamlit app, page config, multi-page architecture
+2. Components library:
+   - metric_card.py: Reusable metric display cards
+   - chart_utils.py: Common Plotly configurations
+   - websocket_client.py: Real-time WebSocket connection
+   - api_client.py: Backend API HTTP client
+   - state_manager.py: Session state management
 
-**Main Application** (`main.py`):
-- FastAPI app initialization con lifespan events
-- Middleware stack: ErrorHandler, Logging, RequestID, RateLimit, Auth, CORS (6 components)
-- Router registration: 7 routers con 17 routes totales
-- OpenAPI/Swagger documentation completa
-- Dependency injection: DB, Redis, repositories, use cases
-- Performance: <50ms p99 response time target
+**7 Pages Production-Ready**:
 
-**WebSocket** (`websocket.py`):
-- ConnectionManager: Topic-based WebSocket management
-- `/ws/orderbook/{market_id}`: Real-time orderbook updates
-- `/ws/positions/{bot_id}`: Real-time position updates
-- `/ws/bots/status`: Real-time bot status updates
-- Heartbeat/ping-pong keep-alive
-- Graceful disconnect handling
-- Broadcast functionality topic-based
+1. **Overview Page** (pages/1_Overview.py):
+   - Emergency controls: HALT ALL, PAUSE ALL, RESUME ALL (prominent)
+   - Metrics cards: Portfolio Value, Total P&L, Open Positions, Active Bots (1s updates)
+   - Charts: P&L cumulative, portfolio composition pie, zone heatmap
+   - Bot status grid: Quick view 10 bots
 
-**Routes** (7 routers, 17 endpoints):
-- `bots.py`: 6 routes (list, get, start, stop, pause, update config)
-- `positions.py`: 3 routes (list, get, close)
-- `orders.py`: 4 routes (list, get, place, cancel)
-- `metrics.py`: 3 routes (bot metrics, portfolio, prometheus)
-- `health.py`: 3 routes (liveness, readiness, startup)
-- `wallet.py`: 4 routes (balance, topup, rebalance, transactions)
-- `risk.py`: 3 routes (metrics, circuit-breakers, emergency-halt)
+2. **Bot Control Page** (pages/2_Bot_Control.py):
+   - Status grid: 10 bots state indicators
+   - Detail panel: Metrics (2s), charts (ROI, positions), config YAML editor, logs (last 50), actions (START/STOP/PAUSE/RESUME/HALT)
+   - State diagram: Visual lifecycle
 
-**E2E Tests** (8 archivos):
-- `test_api_bots.py`: 6 tests bot routes
-- `test_api_health.py`: 3 tests health routes
-- `test_api_positions.py`: Tests position routes (structure)
-- `test_api_orders.py`: Tests order routes (structure)
-- `test_api_metrics.py`: Tests metrics routes (structure)
-- `test_api_wallet.py`: Tests wallet routes (structure)
-- `test_api_risk.py`: Tests risk routes (structure)
-- `test_api_websocket.py`: Tests WebSocket endpoints (structure)
+3. **Performance Page** (pages/3_Performance.py):
+   - Comparative table: All bots (Bot ID, Strategy, ROI, P&L, Win Rate, Sharpe, Positions, Status)
+   - Charts: ROI multi-line, risk-adjusted scatter (Sharpe vs ROI), drawdown analysis, P&L histogram, hold times box plot
+   - Filtering: Strategy, status, date range
+   - Export: CSV download
 
-**Features**:
-- Type hints: mypy strict completo
-- Authentication: API key middleware
-- Rate limiting: Redis-backed 100 req/min
-- CORS: Dashboard origin allowed
-- Logging: JSON structured
-- Error handling: Consistent format
-- OpenAPI docs: /docs, /redoc, /openapi.json
-- WebSocket: Real-time updates
+4. **Positions Page** (pages/4_Positions.py):
+   - Active table: 1s updates (Bot, Market, Side, Size, Entry, Current, P&L, Duration, Zone, Status)
+   - Position modal: Entry/exit info, P&L breakdown, market context, CLOSE button
+   - Closed history: Last 100 (filterable bot_id, date, profit/loss)
+   - Charts: Position heatmap (size vs P&L), portfolio value time series
+   - Export: CSV active/closed
 
-**Métricas alcanzadas**:
-- 17 routes distribuidas en 7 routers
-- 6 middleware components
-- 3 WebSocket endpoints
-- 8 archivos E2E tests structure
-- Type checking: mypy strict clean
-- OpenAPI documentation: Complete
-- Performance target: <50ms p99
+5. **Order Log Page** (pages/5_Order_Log.py):
+   - Execution table: 2s updates (Time, Bot, Market, Side, Type, Size, Price, Status, Fill%, Latency)
+   - Order modal: Timeline (submitted → ack → filled), fill breakdown, rejection reason, gas+slippage
+   - Filters: Bot, status, time range, order type
+   - Metrics cards: Fill rate, avg latency, rejection rate, 24h volume
+   - Charts: Latency histogram (p99 100ms target), rejection analysis (pie+bar), size distribution
+   - Export: CSV order log
 
-**ETA**: 4 semanas → COMPLETADO 2026-02-13 (adelantado)
-**Próximo**: Fase 12 - Dashboard Implementation
+6. **Risk Monitor Page** (pages/6_Risk_Monitor.py):
+   - Zone exposure grid: 5 zones, current %, limits, progress bars (GREEN/YELLOW/RED)
+   - Circuit breakers: 4 breakers status (ARMED/TRIGGERED), thresholds, auto-reset timers
+   - Drawdown gauges: Portfolio (40% threshold), bot-specific (25% threshold), color-coded Plotly
+   - Consecutive loss tracker: Per-bot count, 3-loss threshold, recent timeline
+   - Risk alerts feed: Last 50 WebSocket alerts, filterable severity (INFO/WARNING/CRITICAL)
+   - Zone heatmap: Exposure concentration (drill-down by bot)
 
-### Fase 12: ⏳ Dashboard Implementation (PENDIENTE)
-**Descripción**: Streamlit 7 páginas + WebSocket real-time + charts  
-**ETA**: 3 semanas  
-**Dependencies**: Fase 11 (API endpoints) ✅
-**Blockers**: Ninguno
+7. **Settings Page** (pages/7_Settings.py):
+   - **Tab 1 - Global Config**: Emergency controls, risk params (40% portfolio, 5% daily), trading params (POST_ONLY, 0.5% slippage, rate limits), save+validation
+   - **Tab 2 - Bot-Specific**: Bot selector, config editor (capital, Kelly, position size, zones, strategy YAML), enable/disable, reset defaults
+   - **Tab 3 - Notifications**: Alert channels (email SMTP, webhooks Slack/Discord, SMS Twilio), thresholds (circuit breaker, balance, performance), test button
+   - **Tab 4 - Database**: Connection status (TimescaleDB+Redis), metrics (latency p50/p99, pool usage, cache hit rate), maintenance (compression, retention, backup), actions (compress now, clear cache, export snapshot)
+   - **Tab 5 - System Health**: Service status grid (API, Dashboard, DB, Redis, WebSocket, 10 bots), resource usage (CPU%, Memory MB, Network I/O), logs viewer (last 100, filter service/level, live tail), system actions (restart, clear logs, diagnostics)
 
-### Fase 13: ⏳ Integration Tests (PENDIENTE)
-**Descripción**: Tests integración completos Infrastructure + Application layers  
-**ETA**: 2 semanas  
-**Dependencies**: Fases 11-12
-**Blockers**: Ninguno
+**Integration**:
+- FastAPI: 17 routes (/api/v1/bots, /positions, /orders, /metrics, /risk, /config, /health, /wallet)
+- WebSocket: Real-time updates (/ws/bots/status, /ws/positions/{bot_id}, /ws/risk/alerts)
+- Authentication: X-API-Key header
 
-### Fase 14: ⏳ Bots 9-10 (PENDIENTE)
-**Descripción**: Kelly Optimizer + Long-term Value  
-**ETA**: 3 semanas  
-**Dependencies**: Fase 11 (API) ✅
+**Production Features**:
+- Input validation: Pydantic all forms
+- Confirmation dialogs: Destructive actions (HALT, CLOSE, DELETE)
+- Loading spinners: Async operations
+- Error handling: User-friendly messages, graceful degradation
+- Auto-reconnect: WebSocket on disconnect
+- Session persistence: State across navigation
+- Type hints: mypy strict
+- Docstrings: Google style comprehensive
+- Responsive: Mobile/tablet/desktop
+- Color-coded: Status indicators (green/yellow/red), performance tiers (Elite/Good/Average/Poor)
+- Audit trail: Config changes
+- Rollback: Config changes capability
 
-### Fase 15: ⏳ Production Deployment (PENDIENTE)
-**Descripción**: Docker Compose 16 services, CI/CD, monitoring  
-**ETA**: 2 semanas  
-**Dependencies**: Fases 11-14
+**ETA**: 28h → COMPLETADO (4 commits, 7 páginas, 5 componentes)
+
+### Fase 13: 🔜 Integration Tests (EN PROGRESO)
+**Descripción**: Integration tests end-to-end flujos críticos  
+**Scope**:
+
+**1. Bot Lifecycle Tests** (`tests/integration/test_bot_lifecycle.py`):
+- Test startup: IDLE → STARTING → ACTIVE (estado transitions, DB updates, event publishing)
+- Test pause/resume: ACTIVE ⇄ PAUSED (state persistence, position preservation)
+- Test stop graceful: ACTIVE → STOPPING → STOPPED (close open positions, cleanup resources)
+- Test emergency halt: ANY_STATE → EMERGENCY_HALT (immediate stop, alert publishing, audit trail)
+- Test error recovery: ERROR → retry → ACTIVE or STOPPED
+- Fixtures: Test bots, mock external services, DB cleanup
+
+**2. Order Flow Tests** (`tests/integration/test_order_flow.py`):
+- Test order placement: Risk validation → order creation → DB save → event publish → CLOB submission
+- Test order fill: WebSocket update → position creation → P&L calculation → metrics update
+- Test partial fill: Multiple fill events → position accumulation → average entry price
+- Test order rejection: CLOB rejection → status update → capital release → retry logic
+- Test order cancel: Cancel request → CLOB cancel → capital release → DB update
+- Test POST_ONLY enforcement: Order type validation, fee calculation, maker rebate
+- Test slippage limits: Slippage calculation, max threshold enforcement
+- Fixtures: Mock CLOB client, test markets, virtual balances
+
+**3. Risk Management Tests** (`tests/integration/test_risk_management.py`):
+- Test zone restrictions: Validate zone classification, enforce directional ban Z4-Z5, allow arb/MM all zones
+- Test circuit breaker consecutive losses: 3 losses → pause 24h → auto-resume
+- Test circuit breaker daily loss: 5% daily → halt all → manual resume required
+- Test circuit breaker bot drawdown: 25% → halt bot → manual resume
+- Test circuit breaker portfolio drawdown: 40% → emergency halt → manual resume
+- Test Kelly sizing: Half/Quarter/Full Kelly calculation, edge validation, max position size
+- Test exposure limits: Max 40% per outcome (Bot 6), max 30% inventory skew (Bot 5)
+- Test risk metrics calculation: Current drawdown, consecutive losses, open exposure
+- Fixtures: Mock risk events, test positions, circuit breaker state
+
+**4. Wallet Integration Tests** (`tests/integration/test_wallet_integration.py`):
+- Test balance tracking: Real-time balance updates, USDC/MATIC tracking, pending tx consideration
+- Test nonce management: Redis lock acquisition, nonce increment, blockchain sync, collision prevention
+- Test gas estimation: Gas limit calculation, EIP-1559 pricing, adaptive strategy (rapid/fast/standard/queue)
+- Test transaction signing: Local signing (eth_account), signature validation, NEVER send private key
+- Test transaction submission: RPC submission, pending tracking, confirmation polling, stuck detection
+- Test auto-rebalance: Trigger <5% threshold, transfer cold→hot, update balances, alert publishing
+- Test emergency withdrawal: Transfer ALL to cold, halt all bots, audit trail
+- Fixtures: Mock blockchain RPC, test wallets (hot/cold), Redis nonce state
+
+**5. Database Performance Tests** (`tests/integration/test_database_performance.py`):
+- Test query latency: Simple queries <10ms p99, aggregations <50ms p99, dashboard <100ms p99
+- Test write throughput: 1000 orders/min sustained, 10ms p99 write latency
+- Test hypertable chunks: 7-day chunks orders/positions/trades, 1-day chunks market_snapshots
+- Test compression: 14d policy orders/positions/trades, 7d policy market_snapshots, 4-5x ratio validation
+- Test continuous aggregates: bot_performance_hourly, bot_pnl_daily, market_price_5min refresh
+- Test retention: 365d orders/positions/trades, 90d market_snapshots, auto-cleanup
+- Test connection pooling: Max connections, idle timeout, connection reuse
+- Fixtures: Test hypertables, sample data generation, cleanup policies
+
+**6. WebSocket Integration Tests** (`tests/integration/test_websocket_integration.py`):
+- Test orderbook subscription: Subscribe market_id, receive updates <100ms, price/liquidity tracking
+- Test trade feed subscription: Subscribe bot_id, receive trade executions, update positions
+- Test event stream subscription: Subscribe event_type, receive domain events (OrderPlaced, PositionClosed, CircuitBreakerTriggered)
+- Test auto-reconnect: Simulate disconnect, reconnect exponential backoff (1s, 2s, 4s, 8s max), resubscribe all channels
+- Test heartbeat: Send ping every 30s, expect pong <5s, disconnect if timeout
+- Test message ordering: Validate sequence numbers, detect gaps, request replay if missing
+- Test rate limiting: Dashboard 1s updates, API 100 req/min, CLOB 3500/10s burst
+- Fixtures: Mock WebSocket server, test channels, message sequences
+
+**7. Dashboard API Tests** (`tests/integration/test_dashboard_api.py`):
+- Test metrics endpoint: /api/v1/metrics/portfolio, /api/v1/metrics/bots/{id}, real-time data
+- Test bot control endpoints: POST /api/v1/bots/{id}/start, /stop, /pause, /resume, state transitions
+- Test position endpoints: GET /api/v1/positions, POST /api/v1/positions/{id}/close, P&L calculation
+- Test order endpoints: GET /api/v1/orders, POST /api/v1/orders/place, DELETE /api/v1/orders/{id}
+- Test risk endpoints: GET /api/v1/risk/metrics, GET /api/v1/risk/circuit-breakers, POST /api/v1/risk/emergency-halt
+- Test config endpoints: GET /api/v1/config/global, PUT /api/v1/config/global, GET /api/v1/config/bots/{id}, PUT /api/v1/config/bots/{id}
+- Test health endpoints: GET /health/live, GET /health/ready, GET /health/startup
+- Test authentication: X-API-Key header validation, 401 unauthorized
+- Test rate limiting: 100 req/min per client, 429 too many requests
+- Fixtures: Test API client, mock backend services, auth tokens
+
+**8. Paper Trading Integration Tests** (`tests/integration/test_paper_trading_integration.py`):
+- Test complete session: Initialize $5K → place orders → simulate fills → close positions → calculate performance
+- Test order simulation: POST_ONLY 70% fill, MARKET instant, slippage 0.1% avg/0.5% max, latency 50ms
+- Test position tracking: Open position → unrealized P&L calculation → close position → realized P&L
+- Test performance metrics: ROI calculation, win rate tracking, Sharpe ratio estimation
+- Test state reset: Clean reset → initial balance restored → positions cleared → stats reset
+- Test Bot 8 validation: 7 days simulation, ≥5% ROI target, ≤15% max drawdown, ≥60% win rate
+- Fixtures: Paper trading engine, test strategies, mock market data
+
+**Test Infrastructure**:
+- Testcontainers: TimescaleDB, Redis containers (isolated test DBs)
+- Fixtures: Shared fixtures module (test_fixtures.py)
+- Async support: pytest-asyncio for async tests
+- Coverage: ≥80% threshold (pytest-cov)
+- CI/CD: GitHub Actions run on every push
+- Performance benchmarks: Track latency trends, alert regressions
+
+**Acceptance Criteria**:
+- All 8 integration test suites pass
+- Coverage ≥80% integration code
+- Latency budgets met: <10ms simple, <50ms aggregation, <100ms dashboard
+- No flaky tests: 100 consecutive runs pass
+- CI/CD green: All tests pass on main branch
+
+**ETA**: 32h (8 suites x 4h)
 
 ---
 
-## 📝 Convenciones de Código
+## 📊 Estado Actual
 
-### Type Hints (mypy --strict)
-- Todas las funciones: parámetros + return type
-- Variables ambiguas: type annotations
-- No Any (excepto argumentos externos)
-- Union[X, Y] o X | Y (Python 3.10+)
-- Optional[X] para valores None
+**Fase actual**: Fase 13 (Integration Tests)  
+**Progreso global**: ~75% (Fases 1-6 + Fase 12 completadas, Fase 7 en progreso, Fases 8-13 pendientes)  
+**Último commit**: 2026-02-13 01:58:53 UTC  
+**Branch**: main  
+**Estado**: Clean working directory  
 
-### Docstrings (Google Style)
-```python
-def function(param1: int, param2: str) -> bool:
-    """Short description.
-    
-    Longer description if needed.
-    
-    Args:
-        param1: Description of param1
-        param2: Description of param2
-    
-    Returns:
-        Description of return value
-    
-    Raises:
-        ExceptionType: When this happens
-    """
-```
+**Completado**:
+- ✅ Fase 1: Estructura (168 files)
+- ✅ Fase 2: Config files (Docker, requirements, pre-commit)
+- ✅ Fase 3: Core services (10 services production-ready)
+- ✅ Fase 4: Bot 8 Prototype (tests ≥85%)
+- ✅ Fase 5: Dashboard MVP (7 páginas interactivas)
+- ✅ Fase 6: Paper Trading (engine + use cases + tests)
+- ✅ Fase 12: Dashboard Enhancements (7 páginas production-ready, 5 componentes, WebSocket real-time, Plotly charts, comprehensive monitoring)
 
-### Naming Conventions
-- PascalCase: Classes, Types, Protocols
-- snake_case: functions, variables, modules
-- UPPER_SNAKE_CASE: constants
-- _private: métodos/atributos privados
+**En progreso**:
+- ⏳ Fase 7: Bot 8 Production (paper trading validation)
+- ⏳ Fase 13: Integration Tests (8 suites x 4h = 32h)
 
-### Error Handling
-- Result[T, E] pattern (domain layer)
-- Never bare `except:`
-- Log antes de raise
-- Domain exceptions específicas
-
-### Logging (JSON Structured)
-```python
-logger.info("event_name", extra={"key": "value"})
-```
-
-### Async/Await
-- Async IO operations SIEMPRE
-- Never blocking I/O in async context
-- Connection pooling (asyncpg, Redis)
+**Próximos pasos**:
+1. Implementar Fase 13: Integration Tests (8 test suites)
+2. Continuar Fase 7: Bot 8 Production deployment
+3. Fase 8: Bots 1-7 Integration (7 bots)
+4. Fase 9: Bots 9-10 Development (2 bots nuevos)
+5. Fase 10: Full Integration Testing (load, failover)
+6. Fase 11: Production Hardening (security, performance)
 
 ---
 
-## 🚨 Restricciones CRÍTICAS
+## 🚫 Reglas CRÍTICAS (NUNCA violar)
 
-### PROHIBIDO
-- ❌ Cambiar arquitectura Clean/Hexagonal sin approval
-- ❌ Violar dependency rule (inner conoce outer)
-- ❌ REST polling (SOLO WebSocket)
-- ❌ Taker orders (SOLO post-only)
-- ❌ Full Kelly (SOLO Half/Quarter)
-- ❌ Directional trading Zone 4-5
-- ❌ Código sin type hints
-- ❌ Código sin docstrings públicas
-- ❌ Bare `except:`
-- ❌ Secrets hardcoded
-- ❌ Log private keys
-- ❌ Blocking I/O en async context
-- ❌ SQL injection vulnerabilities
-- ❌ Full table scans
-- ❌ Merge con <80% coverage
-- ❌ Commits WIP/fix
-- ❌ Push broken code
+### Arquitectura
+1. ❌ Cambiar arquitectura sin ADR aprobado
+2. ❌ Violar dependency rule (outer → inner)
+3. ❌ Business logic en infrastructure/presentation
+4. ❌ Infrastructure concerns en domain
 
-### OBLIGATORIO
-- ✅ Types completos (mypy strict)
-- ✅ Docstrings Google style
+### Trading
+5. ❌ REST polling (WebSocket OBLIGATORIO)
+6. ❌ Taker orders (Post-only OBLIGATORIO)
+7. ❌ Full Kelly (Half/Quarter SOLO)
+8. ❌ Directional betting Z4-Z5 (Arb/MM solo)
+9. ❌ Skip risk validation
+10. ❌ Exceed circuit breaker thresholds
+
+### Código
+11. ❌ Código sin type hints
+12. ❌ Funciones públicas sin docstrings
+13. ❌ `except:` bare (specify exception)
+14. ❌ Secrets hardcoded
+15. ❌ Log private keys (ni debug)
+16. ❌ Blocking I/O en async functions
+17. ❌ SQL injection vulnerable (use params)
+18. ❌ Full table scans (use indices)
+
+### Testing & Deployment
+19. ❌ Merge PR <80% coverage
+20. ❌ Commit WIP/fix/temp messages
+21. ❌ Push broken code
+22. ❌ Deploy sin paper trading validation
+23. ❌ Skip pre-commit hooks
+24. ❌ Ignore linter errors
+
+---
+
+## ✅ Criterios de Aceptación (TODAS las tareas)
+
+### Código
+- ✅ Type hints completos (mypy --strict clean)
+- ✅ Docstrings públicas (Google style)
 - ✅ Tests ≥80% coverage
-- ✅ black + ruff + mypy clean
-- ✅ Error handling robusto
-- ✅ JSON structured logging
-- ✅ Conventional commits
-- ✅ Gitleaks clean
-- ✅ Performance budgets
-- ✅ Security validation
-- ✅ Resilience (retries, circuit breakers)
+- ✅ black, ruff, mypy clean
+- ✅ Error handling robusto (Result[T,E] pattern)
+- ✅ Logging JSON structured
+
+### Git
+- ✅ Conventional commits: `type(scope): subject`
+- ✅ Pre-commit hooks pass
+- ✅ gitleaks clean (no secrets)
+- ✅ Commits atómicos (1 feature/fix)
+
+### Performance
+- ✅ Simple queries <10ms p99
+- ✅ Aggregations <50ms p99
+- ✅ Dashboard <100ms p99
+- ✅ Memory leaks: none
+
+### Security
+- ✅ Secrets en env vars
+- ✅ Private keys encrypted AES-256
+- ✅ Input validation (Pydantic)
+- ✅ SQL injection protected
+- ✅ Rate limiting enforced
+
+### Resilience
+- ✅ Circuit breakers functional
+- ✅ Auto-reconnect WebSocket
+- ✅ Graceful degradation
+- ✅ Error recovery tested
 
 ---
 
-## 🎯 Criterios de Aceptación
+## 🎯 Objetivo Final
 
-### Code Review Checklist
-- [ ] Type hints completos
-- [ ] Docstrings públicas
-- [ ] Tests ≥80% coverage nuevos
-- [ ] black + ruff clean
-- [ ] mypy --strict clean
-- [ ] Gitleaks clean
-- [ ] Error handling robusto
-- [ ] Performance acceptable
-- [ ] Security validated
-- [ ] Conventional commits
-- [ ] No breaking changes
+**Sistema operando 24/7**:
+- 10 bots activos simultáneos
+- $50K capital total ($5K cada bot)
+- Target: 8-12% ROI mensual
+- Max drawdown: 15% por bot, 40% portfolio
+- Uptime: 99.9% (43min downtime/mes max)
+- Latency: <100ms p99 dashboard
+- Win rate: ≥60% promedio
+- Sharpe ratio: ≥1.5 target
 
----
-
-## 📚 Referencias
-
-- [Polymarket CLOB API](https://docs.polymarket.com)
-- [Clean Architecture](https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html)
-- [DDD](https://martinfowler.com/bliki/DomainDrivenDesign.html)
-- [Hexagonal Architecture](https://alistair.cockburn.us/hexagonal-architecture/)
-- [TimescaleDB Best Practices](https://docs.timescale.com/timescaledb/latest/how-to-guides/)
-- [FastAPI Best Practices](https://fastapi.tiangolo.com/tutorial/)
+**Production-grade desde día 1**: Testing exhaustivo, monitoring completo, circuit breakers robustos, wallet management seguro, paper trading validation ANTES de real money.
 
 ---
 
-**Última actualización**: 2026-02-13  
-**Versión**: 2.12.0  
-**Estado**: Fase 6 COMPLETADA | Fase 12 NEXT
+**Última actualización**: 2026-02-13 02:48 CET  
+**Actualizado por**: Contexto automático post Fase 12 completada
