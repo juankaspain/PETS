@@ -5,139 +5,83 @@ Created: 2026-02-13
 """
 
 from datetime import datetime
+from typing import Optional
 
 
-def format_currency(amount: float, decimals: int = 2) -> str:
-    """Format currency with $ and thousands separator.
+def format_currency(amount: float) -> str:
+    """Format amount as USD currency.
     
     Args:
-        amount: Amount to format
-        decimals: Decimal places
-        
+        amount: Amount in dollars
+    
     Returns:
-        Formatted currency string
+        Formatted string: $X,XXX.XX
+    
+    Examples:
+        >>> format_currency(1234.56)
+        '$1,234.56'
+        >>> format_currency(-500.5)
+        '-$500.50'
     """
-    return f"${amount:,.{decimals}f}"
+    if amount < 0:
+        return f"-${abs(amount):,.2f}"
+    return f"${amount:,.2f}"
 
 
-def format_percentage(value: float, decimals: int = 2) -> str:
-    """Format percentage.
+def format_percentage(value: float) -> str:
+    """Format value as percentage.
     
     Args:
-        value: Value to format (0.1234 = 12.34%)
-        decimals: Decimal places
-        
+        value: Value as decimal (0.15 = 15%)
+    
     Returns:
-        Formatted percentage string
+        Formatted string: X.XX%
+    
+    Examples:
+        >>> format_percentage(0.1234)
+        '12.34%'
+        >>> format_percentage(-0.05)
+        '-5.00%'
     """
-    return f"{value * 100:.{decimals}f}%"
+    return f"{value * 100:.2f}%"
 
 
-def format_timestamp(timestamp: datetime, fmt: str = "%Y-%m-%d %H:%M:%S") -> str:
-    """Format timestamp to human-readable string.
+def format_timestamp(timestamp: Optional[datetime]) -> str:
+    """Format timestamp as ISO 8601 string.
     
     Args:
-        timestamp: Datetime to format
-        fmt: strftime format string
-        
+        timestamp: Datetime object or None
+    
     Returns:
-        Formatted timestamp string
+        Formatted string: YYYY-MM-DD HH:MM:SS or "N/A"
+    
+    Examples:
+        >>> format_timestamp(datetime(2026, 2, 13, 2, 20, 30))
+        '2026-02-13 02:20:30'
+        >>> format_timestamp(None)
+        'N/A'
     """
-    return timestamp.strftime(fmt)
+    if timestamp is None:
+        return "N/A"
+    return timestamp.strftime("%Y-%m-%d %H:%M:%S")
 
 
-def calculate_pnl(entry_price: float, current_price: float, size: float, side: str) -> float:
-    """Calculate profit/loss.
+def format_market_id(market_id: str, max_length: int = 16) -> str:
+    """Truncate long market IDs.
     
     Args:
-        entry_price: Entry price
-        current_price: Current market price
-        size: Position size
-        side: Position side (YES/NO)
-        
-    Returns:
-        Profit/loss amount
-    """
-    if side.upper() == "YES":
-        return (current_price - entry_price) * size
-    else:
-        return (entry_price - current_price) * size
-
-
-def calculate_roi(pnl: float, investment: float) -> float:
-    """Calculate return on investment.
+        market_id: Full market ID (Polymarket condition ID)
+        max_length: Maximum length before truncation
     
-    Args:
-        pnl: Profit/loss
-        investment: Initial investment
-        
     Returns:
-        ROI as decimal (0.10 = 10%)
-    """
-    if investment == 0:
-        return 0.0
-    return pnl / investment
-
-
-def get_zone_color(zone: int) -> str:
-    """Get color for price zone.
+        Truncated string with ellipsis
     
-    Args:
-        zone: Zone number (1-5)
-        
-    Returns:
-        Color name for Streamlit
+    Examples:
+        >>> format_market_id("0x1234567890abcdef1234567890abcdef")
+        '0x1234567890ab...'
+        >>> format_market_id("short_id")
+        'short_id'
     """
-    colors = {
-        1: "green",
-        2: "blue",
-        3: "orange",
-        4: "red",
-        5: "red",
-    }
-    return colors.get(zone, "gray")
-
-
-def get_status_color(status: str) -> str:
-    """Get color for order/position status.
-    
-    Args:
-        status: Status string
-        
-    Returns:
-        Color name for Streamlit
-    """
-    status_upper = status.upper()
-    
-    if status_upper in ["FILLED", "ACTIVE", "COMPLETED"]:
-        return "green"
-    elif status_upper in ["PENDING", "STARTING", "STOPPING"]:
-        return "orange"
-    elif status_upper in ["CANCELED", "REJECTED", "ERROR", "EMERGENCY_HALT"]:
-        return "red"
-    elif status_upper in ["PAUSED", "STOPPED"]:
-        return "gray"
-    else:
-        return "blue"
-
-
-def get_bot_state_emoji(state: str) -> str:
-    """Get emoji for bot state.
-    
-    Args:
-        state: Bot state
-        
-    Returns:
-        Emoji character
-    """
-    emojis = {
-        "IDLE": "⚪",
-        "STARTING": "🟡",
-        "ACTIVE": "🟢",
-        "PAUSED": "🟠",
-        "STOPPING": "🟡",
-        "STOPPED": "⚫",
-        "ERROR": "🔴",
-        "EMERGENCY_HALT": "🔴",
-    }
-    return emojis.get(state.upper(), "⚪")
+    if len(market_id) <= max_length:
+        return market_id
+    return market_id[:max_length] + "..."

@@ -6,38 +6,71 @@ Created: 2026-02-13
 
 import streamlit as st
 
-from src.presentation.dashboard.utils import (
-    get_bot_state_emoji,
-    get_status_color,
-    get_zone_color,
-)
-
 
 def bot_status_badge(state: str) -> None:
-    """Display bot status badge.
+    """Render bot status badge.
     
     Args:
-        state: Bot state
+        state: Bot state (IDLE, RUNNING, PAUSED, ERROR)
     """
-    emoji = get_bot_state_emoji(state)
-    color = get_status_color(state)
+    colors = {
+        "IDLE": "gray",
+        "RUNNING": "green",
+        "PAUSED": "orange",
+        "ERROR": "red",
+    }
     
+    color = colors.get(state, "gray")
     st.markdown(
-        f'<span style="color: {color};">{emoji} {state}</span>',
+        f'<span style="background-color:{color};color:white;'
+        f'padding:4px 8px;border-radius:4px;font-size:12px;'
+        f'font-weight:bold">{state}</span>',
         unsafe_allow_html=True,
     )
 
 
 def zone_badge(zone: int) -> None:
-    """Display zone badge.
+    """Render risk zone badge.
     
     Args:
-        zone: Zone number (1-5)
+        zone: Risk zone 1-5
     """
-    color = get_zone_color(zone)
+    # Zone colors: 1=green, 2=blue, 3=orange, 4=red, 5=darkred
+    colors = {
+        1: "green",
+        2: "blue",
+        3: "orange",
+        4: "red",
+        5: "darkred",
+    }
     
+    color = colors.get(zone, "gray")
     st.markdown(
-        f'<span style="background-color: {color}; padding: 2px 8px; '
-        f'border-radius: 4px; color: white;">Z{zone}</span>',
+        f'<span style="background-color:{color};color:white;'
+        f'padding:4px 8px;border-radius:4px;font-size:12px;'
+        f'font-weight:bold">Z{zone}</span>',
+        unsafe_allow_html=True,
+    )
+
+
+def order_status_badge(status: str) -> None:
+    """Render order status badge.
+    
+    Args:
+        status: Order status
+    """
+    colors = {
+        "PENDING": "orange",
+        "FILLED": "green",
+        "PARTIALLY_FILLED": "blue",
+        "CANCELED": "gray",
+        "REJECTED": "red",
+    }
+    
+    color = colors.get(status, "gray")
+    st.markdown(
+        f'<span style="background-color:{color};color:white;'
+        f'padding:4px 8px;border-radius:4px;font-size:12px;'
+        f'font-weight:bold">{status}</span>',
         unsafe_allow_html=True,
     )
