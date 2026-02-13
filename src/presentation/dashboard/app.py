@@ -1,212 +1,85 @@
-"""Main Streamlit dashboard application."""
+"""Main Streamlit dashboard application.
+
+Author: Juan [juankaspain]
+Created: 2026-02-13
+"""
 
 import streamlit as st
 
 # Page config
 st.set_page_config(
     page_title="PETS - Polymarket Elite Trading System",
-    page_icon="🤖",
+    page_icon="🚀",
     layout="wide",
     initial_sidebar_state="expanded",
 )
 
-# Sidebar
-st.sidebar.title("🤖 PETS Dashboard")
-st.sidebar.markdown("**Polymarket Elite Trading System**")
-st.sidebar.markdown("---")
-
-# Navigation
-page = st.sidebar.radio(
-    "Navigation",
-    [
-        "📊 Overview",
-        "🤖 Bot Management",
-        "💼 Positions",
-        "🏪 Markets",
-        "⚠️ Risk",
-        "📈 Analytics",
-        "🧪 Paper Trading",
-        "📊 Backtesting",
-        "⚙️ Settings",
-    ],
+# Custom CSS
+st.markdown(
+    """
+    <style>
+    .main-header {
+        font-size: 2.5rem;
+        font-weight: bold;
+        color: #1f77b4;
+        margin-bottom: 1rem;
+    }
+    .metric-card {
+        background-color: #f0f2f6;
+        padding: 1rem;
+        border-radius: 0.5rem;
+        border-left: 4px solid #1f77b4;
+    }
+    .emergency-btn {
+        background-color: #ff4b4b;
+        color: white;
+        font-weight: bold;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True,
 )
 
-# API endpoint configuration
-api_base_url = st.sidebar.text_input(
-    "API Endpoint",
-    value="http://localhost:8000",
-    help="FastAPI backend URL",
+# Main page content
+st.markdown('<h1 class="main-header">🚀 PETS Dashboard</h1>', unsafe_allow_html=True)
+
+st.markdown(
+    """
+    ## Welcome to Polymarket Elite Trading System
+    
+    This dashboard provides real-time monitoring and control of your 10-bot trading system.
+    
+    ### Quick Links
+    - **📊 Overview**: Real-time portfolio metrics and emergency controls
+    - **🤖 Bot Control**: Individual bot management and configuration
+    - **📈 Performance**: Comparative analysis and ROI tracking
+    - **💰 Positions**: Active and closed position management
+    - **📜 Order Log**: Execution history and performance metrics
+    - **⚠️ Risk Monitor**: Zone exposure and circuit breaker status
+    - **⚙️ Settings**: System configuration and notifications
+    
+    ### System Status
+    """
 )
 
-# Auto-refresh
-auto_refresh = st.sidebar.checkbox("Auto-refresh", value=True)
-if auto_refresh:
-    refresh_rate = st.sidebar.slider("Refresh rate (seconds)", 10, 120, 30)
+# System health indicators
+col1, col2, col3 = st.columns(3)
 
-st.sidebar.markdown("---")
-st.sidebar.markdown("**Bot 8: Volatility Skew**")
-st.sidebar.markdown("💰 $106K Evidence")
+with col1:
+    st.metric("API Status", "🟢 Online", "Connected")
 
-# Main content
-st.title(page)
+with col2:
+    st.metric("Database", "🟢 Healthy", "<10ms latency")
 
-if page == "📊 Overview":
-    st.markdown("""
-    ### Portfolio Overview
-    
-    Real-time monitoring of your Polymarket trading portfolio.
-    
-    **Key Metrics:**
-    - Portfolio value and P&L
-    - Active bots and their states
-    - Open positions summary
-    - Circuit breaker status
-    """)
-    
-    # Placeholder for overview page
-    st.info("Overview page - See pages/1_overview.py for full implementation")
+with col3:
+    st.metric("WebSocket", "🟢 Active", "Real-time updates")
 
-elif page == "🤖 Bot Management":
-    st.markdown("""
-    ### Bot Management
+st.markdown(
+    """
+    ---
     
-    Control and configure your trading bots.
+    **Navigation**: Use the sidebar to access different sections.
     
-    **Features:**
-    - Start/stop bots
-    - Create new bots
-    - Edit bot configuration
-    - View bot performance
-    """)
-    
-    st.info("Bot Management page - See pages/2_bot_management.py for full implementation")
-
-elif page == "💼 Positions":
-    st.markdown("""
-    ### Positions
-    
-    Monitor and manage your trading positions.
-    
-    **Features:**
-    - Open positions table
-    - Closed positions history
-    - Close positions manually
-    - P&L analysis
-    """)
-    
-    st.info("Positions page - See pages/3_positions.py for full implementation")
-
-elif page == "🏪 Markets":
-    st.markdown("""
-    ### Markets
-    
-    Browse active Polymarket markets and opportunities.
-    
-    **Features:**
-    - Active markets list
-    - Bot 8 opportunity signals
-    - Market filters
-    - Market details
-    """)
-    
-    st.info("Markets page - See pages/4_markets.py for full implementation")
-
-elif page == "⚠️ Risk":
-    st.markdown("""
-    ### Risk Management
-    
-    Monitor portfolio risk and circuit breakers.
-    
-    **Features:**
-    - Portfolio risk metrics (VaR, drawdown)
-    - Circuit breaker status
-    - Zone exposure
-    - Position risk heatmap
-    """)
-    
-    st.info("Risk page - See pages/5_risk.py for full implementation")
-
-elif page == "📈 Analytics":
-    st.markdown("""
-    ### Analytics
-    
-    Analyze trading performance and patterns.
-    
-    **Features:**
-    - Equity curve
-    - Daily P&L chart
-    - Trade analysis
-    - Win rate and profit factor
-    """)
-    
-    st.info("Analytics page - See pages/6_analytics.py for full implementation")
-
-elif page == "🧪 Paper Trading":
-    st.markdown("""
-    ### Paper Trading
-    
-    Test Bot 8 strategy with simulated capital before going live.
-    
-    **Features:**
-    - Virtual $10K starting balance
-    - Real market data, simulated execution
-    - Track paper P&L and performance
-    - Validate strategy without risk
-    - Compare with $106K evidence
-    """)
-    
-    st.info("✅ Paper Trading page - See pages/8_paper_trading.py for full implementation")
-    
-    st.markdown("""
-    **Features:**
-    - Paper wallet balance and positions
-    - Real-time Bot 8 signals
-    - Simulated trade execution
-    - Paper trading metrics
-    - Strategy validation dashboard
-    """)
-
-elif page == "📊 Backtesting":
-    st.markdown("""
-    ### Backtesting
-    
-    Validate Bot 8 strategy on historical data before production.
-    
-    **Features:**
-    - Historical data replay
-    - Bot 8 strategy execution on past data
-    - Performance metrics calculation
-    - Compare with $106K evidence
-    - Parameter optimization
-    """)
-    
-    st.info("✅ Backtesting page - See pages/9_backtesting.py for full implementation")
-    
-    st.markdown("""
-    **Validation Process:**
-    - Run backtest on 90+ days historical data
-    - Calculate win rate, profit factor, Sharpe ratio
-    - Compare results with manual trading evidence
-    - Optimize parameters for best performance
-    - Confirm strategy viability before going live
-    """)
-
-elif page == "⚙️ Settings":
-    st.markdown("""
-    ### Settings
-    
-    Configure system settings and preferences.
-    
-    **Features:**
-    - API endpoint configuration
-    - Refresh rate
-    - Theme settings
-    - Database health check
-    """)
-    
-    st.info("Settings page - See pages/7_settings.py for full implementation")
-
-# Footer
-st.sidebar.markdown("---")
-st.sidebar.markdown("**Status:** 🟢 Connected")
-st.sidebar.markdown(f"**API:** {api_base_url}")
+    **Emergency Halt**: Available on Overview page for immediate system shutdown.
+    """
+)

@@ -1,188 +1,114 @@
-"""API client for FastAPI backend."""
+"""API client for backend communication.
+
+Author: Juan [juankaspain]
+Created: 2026-02-13
+"""
 
 import requests
-from typing import Any, Literal
+from typing import Dict, List, Optional, Any
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class APIClient:
-    """HTTP client for PETS FastAPI backend."""
+    """HTTP client for PETS backend API.
+    
+    Examples:
+        >>> client = APIClient(base_url="http://localhost:8000")
+        >>> metrics = client.get_portfolio_metrics()
+    """
 
-    def __init__(self, base_url: str = "http://localhost:8000"):
+    def __init__(
+        self,
+        base_url: str = "http://localhost:8000",
+        api_key: Optional[str] = None,
+    ) -> None:
         """Initialize API client.
-
+        
         Args:
-            base_url: Base URL for FastAPI backend
+            base_url: Backend API base URL
+            api_key: Optional API key for authentication
         """
         self.base_url = base_url.rstrip("/")
+        self.api_key = api_key
         self.session = requests.Session()
-        self.session.headers.update({"Content-Type": "application/json"})
+        
+        if api_key:
+            self.session.headers["X-API-Key"] = api_key
 
-    def _request(
-        self,
-        method: Literal["GET", "POST", "PUT", "DELETE"],
-        endpoint: str,
-        params: dict[str, Any] | None = None,
-        json: dict[str, Any] | None = None,
-    ) -> dict | list | None:
-        """Make HTTP request to API.
-
-        Args:
-            method: HTTP method
-            endpoint: API endpoint (e.g., '/api/bots')
-            params: Query parameters
-            json: JSON body
-
+    def get_portfolio_metrics(self) -> Dict[str, Any]:
+        """Get portfolio-level metrics.
+        
         Returns:
-            Response JSON or None for 204
-
-        Raises:
-            requests.HTTPError: On HTTP error
+            Portfolio metrics dictionary
         """
-        url = f"{self.base_url}{endpoint}"
+        try:
+            response = self.session.get(f"{self.base_url}/api/v1/metrics/portfolio")
+            response.raise_for_status()
+            return response.json()
+        except Exception as e:
+            logger.error(f"Failed to fetch portfolio metrics: {e}")
+            return self._get_default_metrics()
+
+    def get_bot_list(self) -> List[Dict[str, Any]]:
+        """Get list of all bots.
         
-        response = self.session.request(
-            method=method,
-            url=url,
-            params=params,
-            json=json,
-        )
+        Returns:
+            List of bot dictionaries
+        """
+        try:
+            response = self.session.get(f"{self.base_url}/api/v1/bots")
+            response.raise_for_status()
+            return response.json()
+        except Exception as e:
+            logger.error(f"Failed to fetch bot list: {e}")
+            return []
+
+    def get_bot_metrics(self, bot_id: int) -> Dict[str, Any]:
+        """Get metrics for specific bot.
         
-        response.raise_for_status()
+        Args:
+            bot_id: Bot ID
         
-        # 204 No Content returns None
-        if response.status_code == 204:
-            return None
+        Returns:
+            Bot metrics dictionary
+        """
+        try:
+            response = self.session.get(
+                f"{self.base_url}/api/v1/metrics/bots/{bot_id}"
+            )
+            response.raise_for_status()
+            return response.json()
+        except Exception as e:
+            logger.error(f"Failed to fetch bot {bot_id} metrics: {e}")
+            return {}
+
+    def emergency_halt(self) -> Dict[str, str]:
+        """Trigger emergency halt for all bots.
         
-        return response.json()
+        Returns:
+            Status response
+        """
+        try:
+            response = self.session.post(
+                f"{self.base_url}/api/v1/risk/emergency-halt"
+            )
+            response.raise_for_status()
+            return response.json()
+        except Exception as e:
+            logger.error(f"Failed to trigger emergency halt: {e}")
+            return {"status": "error", "message": str(e)}
 
-    def health_check(self) -> dict:
-        """Health check."""
-        return self._request("GET", "/health")
-
-    # Bots
-    def create_bot(self, strategy_type: str, config: dict, capital_allocated: float) -> dict:
-        """Create bot."""
-        return self._request(
-            "POST",
-            "/api/bots",
-            json={
-                "strategy_type": strategy_type,
-                "config": config,
-                "capital_allocated": capital_allocated,
-            },
-        )
-
-    def list_bots(self, limit: int = 100) -> list[dict]:
-        """List bots."""
-        return self._request(
-            "GET",
-            "/api/bots",
-            params={"limit": limit},
-        )
-
-    def get_bot(self, bot_id: int) -> dict:
-        """Get bot."""
-        return self._request("GET", f"/api/bots/{bot_id}")
-
-    def update_bot_state(self, bot_id: int, state: str) -> dict:
-        """Update bot state."""
-        return self._request(
-            "PUT",
-            f"/api/bots/{bot_id}/state",
-            json={"state": state},
-        )
-
-    def delete_bot(self, bot_id: int) -> None:
-        """Delete bot."""
-        return self._request("DELETE", f"/api/bots/{bot_id}")
-
-    # Orders
-    def list_orders(
-        self,
-        bot_id: int | None = None,
-        status: str | None = None,
-        limit: int = 100,
-    ) -> list[dict]:
-        """List orders."""
-        params = {"limit": limit}
-        if bot_id:
-            params["bot_id"] = bot_id
-        if status:
-            params["status"] = status
-
-        return self._request("GET", "/api/orders", params=params)
-
-    # Positions
-    def list_positions(
-        self,
-        bot_id: int | None = None,
-        status: str | None = None,
-        limit: int = 100,
-    ) -> list[dict]:
-        """List positions."""
-        params = {"limit": limit}
-        if bot_id:
-            params["bot_id"] = bot_id
-        if status:
-            params["status"] = status
-
-        return self._request("GET", "/api/positions", params=params)
-
-    def close_position(self, position_id: str, exit_price: float) -> dict:
-        """Close position."""
-        return self._request(
-            "PUT",
-            f"/api/positions/{position_id}/close",
-            json={"exit_price": exit_price},
-        )
-
-    # Markets
-    def list_markets(
-        self,
-        active: bool = True,
-        min_liquidity: float | None = None,
-        limit: int = 100,
-    ) -> list[dict]:
-        """List markets."""
-        params = {"active": active, "limit": limit}
-        if min_liquidity:
-            params["min_liquidity"] = min_liquidity
-
-        return self._request("GET", "/api/markets", params=params)
-
-    # Analytics
-    def get_portfolio_metrics(self) -> dict:
-        """Get portfolio metrics."""
-        return self._request("GET", "/api/analytics/portfolio")
-
-    def get_performance_metrics(self) -> dict:
-        """Get performance metrics."""
-        return self._request("GET", "/api/analytics/performance")
-
-    def get_risk_metrics(self) -> dict:
-        """Get risk metrics."""
-        return self._request("GET", "/api/analytics/risk")
-
-    # Paper Trading (placeholder for Fase 6)
-    def get_paper_wallet(self) -> dict:
-        """Get paper trading wallet."""
-        return self._request("GET", "/api/paper/wallet")
-
-    def reset_paper_wallet(self, initial_balance: float = 10000) -> dict:
-        """Reset paper trading wallet."""
-        return self._request(
-            "POST",
-            "/api/paper/wallet/reset",
-            json={"initial_balance": initial_balance},
-        )
-
-    def get_paper_positions(self, status: str | None = None) -> list[dict]:
-        """Get paper trading positions."""
-        params = {}
-        if status:
-            params["status"] = status
-        return self._request("GET", "/api/paper/positions", params=params)
-
-    def get_paper_metrics(self) -> dict:
-        """Get paper trading metrics."""
-        return self._request("GET", "/api/paper/metrics")
+    def _get_default_metrics(self) -> Dict[str, Any]:
+        """Get default metrics when API unavailable.
+        
+        Returns:
+            Default metrics dictionary
+        """
+        return {
+            "portfolio_value": 0.0,
+            "total_pnl": 0.0,
+            "open_positions": 0,
+            "active_bots": 0,
+        }

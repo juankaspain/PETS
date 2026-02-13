@@ -1,1 +1,5 @@
-"""Streamlit dashboard."""
+"""Dashboard presentation layer.
+
+Author: Juan [juankaspain]
+Created: 2026-02-13
+"""
