@@ -1,118 +1,115 @@
-"""FastAPI application."""
+"""FastAPI main application.
+
+Author: Juan [juankaspain]
+Created: 2026-02-13
+"""
 
 import logging
 from contextlib import asynccontextmanager
+from typing import AsyncGenerator
 
-from fastapi import FastAPI, Request
-from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
+from fastapi import FastAPI
+from redis.asyncio import Redis
 
-from src.presentation.api.routes import (
-    analytics,
-    backtesting,
-    bots,
-    markets,
-    orders,
-    paper,
-    positions,
+from src.infrastructure.persistence.timescaledb import TimescaleDB
+from src.presentation.api.middleware import (
+    AuthMiddleware,
+    ErrorHandlerMiddleware,
+    LoggingMiddleware,
+    RateLimitMiddleware,
+    RequestIDMiddleware,
+    setup_cors,
 )
+from src.presentation.api.routes import (
+    bots,
+    health,
+    metrics,
+    orders,
+    positions,
+    risk,
+    wallet,
+)
+from src.presentation.api.websocket import router as websocket_router
 
 logger = logging.getLogger(__name__)
 
 
 @asynccontextmanager
-async def lifespan(app: FastAPI):
-    """Lifespan context manager for startup/shutdown."""
+async def lifespan(app: FastAPI) -> AsyncGenerator:
+    """Application lifespan events."""
     # Startup
-    logger.info("FastAPI app starting up")
+    logger.info("startup_begin")
+    
+    # Initialize database
+    db = TimescaleDB()
+    await db.connect()
+    app.state.db = db
+    
+    # Initialize Redis
+    redis = Redis.from_url(
+        "redis://localhost:6379/0",
+        encoding="utf-8",
+        decode_responses=True,
+    )
+    app.state.redis = redis
+    
+    logger.info("startup_complete")
+    
     yield
+    
     # Shutdown
-    logger.info("FastAPI app shutting down")
+    logger.info("shutdown_begin")
+    
+    await redis.close()
+    await db.disconnect()
+    
+    logger.info("shutdown_complete")
 
 
-# Create FastAPI app
-app = FastAPI(
-    title="PETS - Polymarket Elite Trading System",
-    description="API for automated Polymarket trading with Bot 8 Volatility Skew strategy",
-    version="1.0.0",
-    docs_url="/docs",
-    redoc_url="/redoc",
-    lifespan=lifespan,
-)
-
-# CORS middleware (allow Streamlit dashboard)
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=[
-        "http://localhost:8501",  # Streamlit default
-        "http://127.0.0.1:8501",
-    ],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
-
-# Exception handlers
-@app.exception_handler(ValueError)
-async def value_error_handler(request: Request, exc: ValueError):
-    """Handle ValueError as 400 Bad Request."""
-    logger.warning(
-        "ValueError",
-        extra={
-            "path": request.url.path,
-            "error": str(exc),
-        },
+def create_app() -> FastAPI:
+    """Create FastAPI application.
+    
+    Returns:
+        Configured FastAPI app instance
+    """
+    app = FastAPI(
+        title="PETS API",
+        description="Polymarket Elite Trading System API",
+        version="1.0.0",
+        docs_url="/docs",
+        redoc_url="/redoc",
+        openapi_url="/openapi.json",
+        lifespan=lifespan,
     )
-    return JSONResponse(
-        status_code=400,
-        content={"detail": str(exc)},
+    
+    # Setup CORS
+    setup_cors(
+        app,
+        allowed_origins=[
+            "http://localhost:8501",  # Streamlit dashboard
+            "http://dashboard:8501",  # Docker dashboard
+        ],
     )
+    
+    # Add middleware (order matters - reverse execution order)
+    app.add_middleware(ErrorHandlerMiddleware)
+    app.add_middleware(LoggingMiddleware)
+    app.add_middleware(RequestIDMiddleware)
+    # RateLimitMiddleware and AuthMiddleware added in dependencies
+    
+    # Include routers
+    app.include_router(health.router, prefix="/api/v1")
+    app.include_router(bots.router, prefix="/api/v1")
+    app.include_router(positions.router, prefix="/api/v1")
+    app.include_router(orders.router, prefix="/api/v1")
+    app.include_router(metrics.router, prefix="/api/v1")
+    app.include_router(wallet.router, prefix="/api/v1")
+    app.include_router(risk.router, prefix="/api/v1")
+    app.include_router(websocket_router, prefix="/api/v1")
+    
+    logger.info("app_created", extra={"routes": len(app.routes)})
+    
+    return app
 
 
-@app.exception_handler(Exception)
-async def general_exception_handler(request: Request, exc: Exception):
-    """Handle unexpected exceptions as 500 Internal Server Error."""
-    logger.error(
-        "Unexpected error",
-        extra={
-            "path": request.url.path,
-            "error": str(exc),
-        },
-        exc_info=True,
-    )
-    return JSONResponse(
-        status_code=500,
-        content={"detail": "Internal server error"},
-    )
-
-
-# Health check
-@app.get("/health")
-async def health_check():
-    """Health check endpoint."""
-    return {"status": "healthy", "service": "PETS API"}
-
-
-# Include routers
-app.include_router(bots.router, prefix="/api/bots", tags=["Bots"])
-app.include_router(orders.router, prefix="/api/orders", tags=["Orders"])
-app.include_router(positions.router, prefix="/api/positions", tags=["Positions"])
-app.include_router(markets.router, prefix="/api/markets", tags=["Markets"])
-app.include_router(analytics.router, prefix="/api/analytics", tags=["Analytics"])
-app.include_router(paper.router, prefix="/api/paper", tags=["Paper Trading"])
-app.include_router(
-    backtesting.router, prefix="/api/backtest", tags=["Backtesting"]
-)
-
-
-# Root endpoint
-@app.get("/")
-async def root():
-    """Root endpoint."""
-    return {
-        "service": "PETS - Polymarket Elite Trading System",
-        "version": "1.0.0",
-        "docs": "/docs",
-        "health": "/health",
-    }
+app = create_app()
