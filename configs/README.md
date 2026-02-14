@@ -10,7 +10,7 @@ configs/
   bot_02_esports.yaml         # Bot 2: Esports Markets
   bot_03_copy_trading.yaml    # Bot 3: Copy Trading
   bot_04_news_driven.yaml     # Bot 4: News-Driven Trading
-    bot_05_arbitrage.yaml     # Bot 5: Arbitrage Detection
+    bot_05_market_making.yaml     # Bot 5: Market Making
   bot_06_multi_outcome.yaml   # Bot 6: Multi-Outcome Markets
   bot_07_contrarian.yaml      # Bot 7: Contrarian Strategy
   bot_08_tail_risk.yaml       # Bot 8: Tail Risk Combo
