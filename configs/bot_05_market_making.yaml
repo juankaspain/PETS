@@ -1,0 +1,33 @@
+# Bot 5: Market Making Configuration
+bot_id: 5
+strategy_type: "market_making"
+enabled: true
+
+# Capital allocation
+capital_allocated: 5000  # $5K (10% portfolio)
+max_positions: 10  # Max simultaneous positions
+cycle_interval: 5  # 5s cycles
+
+# Spread parameters
+base_spread_bps: 50  # 0.50% base spread
+min_spread_bps: 20   # 0.20% minimum spread
+max_spread_bps: 200  # 2.00% maximum spread
+
+# Inventory management
+max_inventory_imbalance: 0.30  # 30% max imbalance
+skew_factor: 0.5  # How much to skew quotes based on inventory
+
+# Market filters
+target_markets: 20
+liquidity_threshold_usdc: 5000
+target_zones: [2, 3]  # Z2-Z3 focus (0.20-0.60 range)
+
+# Risk management
+max_drawdown_pct: 15.0
+kelly_fraction: 0.5  # Half Kelly sizing
+post_only: true  # Maker orders only for rebates
+
+# Quote management
+quote_refresh_interval: 1.0  # seconds
+min_order_size: 10  # USDC
+max_order_size: 500  # USDC
