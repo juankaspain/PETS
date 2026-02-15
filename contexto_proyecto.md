@@ -1,43 +1,44 @@
 # PETS - Polymarket Elite Trading System
 ## Contexto Completo del Proyecto
-**Last Verified:** 2026-02-15 03:00 CET  
-**Last Commit:** 7aa0b7993d482a39836e064f7e52f87634d9e3d8  
-**Project Status:** 14/17 Phases COMPLETE (82.4%)  
+
+**Última Verificación:** 2026-02-15 04:00 CET
+**Último Commit:** 1df71b3 (Delete src/bots/bot_10_longterm_value.py)
+**Estado del Proyecto:** 14/17 Fases COMPLETAS (82.4%)
 **Idioma del Proyecto:** Español (todas las contribuciones, documentación y comentarios deben estar en español)
 
 ---
 
-## ⚠️ CRITICAL: How to Keep This Context Accurate
+## ⚠️ CRÍTICO: Cómo Mantener Este Contexto Preciso
 
-**VERIFICATION PROTOCOL (MANDATORY BEFORE ANY UPDATE):**
+**PROTOCOLO DE VERIFICACIÓN (OBLIGATORIO ANTES DE CUALQUIER ACTUALIZACIÓN):**
 
-1. **File Count Verification:**
+1. **Verificación de Conteo de Archivos:**
    ```bash
-   find src -name "*.py" -type f | wc -l  # Should match documented count
+   find src -name "*.py" -type f | wc -l  # Debe coincidir con el conteo documentado
    ```
 
-2. **Bot Verification:**
+2. **Verificación de Bots:**
    ```bash
-   ls -1 src/bots/bot_*.py  # Must show ALL 10 bots
+   ls -1 src/bots/bot_*.py  # Debe mostrar TODOS los 10 bots
    ```
 
-3. **Commit History Check:**
+3. **Verificación del Historial de Commits:**
    ```bash
-   git log --since="24 hours ago" --oneline  # Review recent work
+   git log --since="24 hours ago" --oneline  # Revisar trabajo reciente
    ```
 
-4. **Phase Completion Evidence:**
-   - Every phase marked COMPLETE must have:
-     - Commit hash reference
-     - File count verification
-     - Test coverage evidence (if applicable)
+4. **Evidencia de Completitud de Fase:**
+   - Cada fase marcada como COMPLETA debe tener:
+     - Referencia de hash de commit
+     - Verificación de conteo de archivos
+     - Evidencia de cobertura de tests (si aplica)
 
-5. **Update Protocol:**
-   - Read ENTIRE context BEFORE making changes
-   - Verify claims against actual code
-   - Update "Last Verified" timestamp
-   - Add commit hash for traceability
-   - NEVER delete phase information without verification
+5. **Protocolo de Actualización:**
+   - Leer el contexto COMPLETO ANTES de hacer cambios
+   - Verificar claims contra el código real
+   - Actualizar timestamp de "Última Verificación"
+   - Agregar hash de commit para trazabilidad
+   - NUNCA eliminar información de fase sin verificación
 
 ---
 
@@ -47,1049 +48,592 @@
 
 **Stack Tecnológico:**
 - **Backend:** Python 3.11+, FastAPI, asyncio
-- **Base de Datos:** TimescaleDB (time-series), Redis (cache + nonces)
+- **Base de Datos:** TimescaleDB (series temporales), Redis (caché + nonces)
 - **Blockchain:** Web3.py (Polygon), Polymarket CLOB API
-- **Frontend:** Streamlit dashboard (7 páginas)
+- **Frontend:** Dashboard Streamlit (7 páginas)
 - **Infraestructura:** Docker, Docker Compose
-- **Testing:** pytest ≥80% coverage, mypy strict
+- **Testing:** pytest ≥80% cobertura, mypy strict
 
-**Arquitectura:** Clean Architecture + DDD + Hexagonal Pattern  
-**Risk Management:** 5 zonas riesgo, 4 circuit breakers, Half Kelly máximo  
-**Trading:** WebSocket real-time, POST_ONLY orders, EIP-1559 gas optimization  
+**Arquitectura:** Clean Architecture + DDD + Patrón Hexagonal
+**Gestión de Riesgo:** 5 zonas de riesgo, 4 circuit breakers, Half Kelly máximo
+**Trading:** WebSocket tiempo real, órdenes POST_ONLY, optimización gas EIP-1559
 
 **Estado Actual:**
-- ✅ 10 Bots implementados (strategies completas)
-- ✅ Orchestration completa (lifecycle + health + events)
+- ✅ 10 Bots implementados (estrategias completas)
+- ✅ Orquestación completa (ciclo de vida + salud + eventos)
 - ✅ Dashboard completo (7 páginas + WebSocket)
-- ✅ Paper Trading completo (engine + validation)
-- ✅ Integration Tests (bot lifecycle ≥85% coverage)
-- ⏳ Live Trading Deployment (Fase 15 - próxima)
+- ✅ Paper Trading completo (motor + validación)
+- ✅ Tests de Integración (ciclo de vida bot ≥85% cobertura)
+- ⏳ Despliegue Live Trading (Fase 15 - próxima)
+
+---
+
+## ⚠️ ESTADO DE LA AUDITORÍA (Issue #1)
+
+**Fecha de Auditoría:** 2026-02-13
+**Estado:** 🟡 EN PROGRESO
+**Sprints Completados:** 1 de 4 (25%)
+
+### Correcciones Aplicadas (Sprint 1):
+- ✅ `.gitignore` corregido (antes era `gitignore` sin punto)
+- ✅ Bot 8 Tail Risk implementado (~230 líneas, commit 6c06d89)
+- ✅ `src/domain/events/` creado (commit 51a398d)
+- ✅ `bot_manager.py` implementado (~240 líneas, commit 7724290)
+- ✅ Stubs companion eliminados
+- ✅ `env.example` duplicado eliminado
+- ✅ `setup.py` stub eliminado
+- ✅ LICENSE MIT completo
+- ✅ CI/CD pipelines implementados (5 workflows)
+
+### Pendiente (Sprints 2-4):
+- ⏳ **Sprint 2:** Migrar directorios legacy a Clean Architecture
+- ⏳ **Sprint 3:** Actualizar toda documentación a español
+- ⏳ **Sprint 4:** Consolidar dependencias en pyproject.toml
+
+---
+
+## ⚠️ ARQUITECTURA EN TRANSICIÓN
+
+### Estado Objetivo (Clean Architecture):
+```
+src/
+├── domain/           # Lógica de negocio (sin dependencias externas)
+├── application/      # Casos de uso (orquestación sin estado)
+├── infrastructure/   # Detalles de implementación
+└── presentation/     # Interfaces externas
+```
+
+### Estado Actual (Con Directorios Legacy):
+```
+src/
+├── domain/           ✅ CORRECTO
+├── application/      ✅ CORRECTO
+├── infrastructure/   ✅ CORRECTO
+├── presentation/     ✅ CORRECTO
+├── bots/            ⚠️ LEGACY (migrar a application/)
+├── api/             ⚠️ LEGACY (migrar a presentation/)
+├── dashboard/       ⚠️ LEGACY (migrar a presentation/)
+├── core/            ⚠️ LEGACY (distribuir por capa)
+├── data/            ⚠️ LEGACY (migrar a infrastructure/)
+├── monitoring/      ⚠️ LEGACY (migrar a infrastructure/)
+├── strategies/      ⚠️ LEGACY (migrar a domain/services/)
+└── utils/           ⚠️ LEGACY (distribuir por capa)
+```
+
+**Acción Requerida:** Issue #1 Sprint 2 - Migración sistemática de directorios legacy
 
 ---
 
 ## 📊 ESTADO DETALLADO POR COMPONENTE
 
-### 1. BOTS (10/10 COMPLETOS) ✅
+### 1. BOTS (10/10 IMPLEMENTADOS) ✅
 
-**Verified:** 2026-02-15 (source code inspection)
+**Verificado:** 2026-02-15 (inspección de código fuente)
 
-| Bot | Strategy | File | Status | Evidence |
-|-----|----------|------|--------|----------|
-| Bot 1 | Market Rebalancing | `bot_01_rebalancer.py` | ✅ COMPLETO | File exists |
-| Bot 2 | Esports Trading | `bot_02_esports.py` | ✅ COMPLETO | File exists |
-| Bot 3 | Copy Trading | `bot_03_copy_trading.py` | ✅ COMPLETO | File exists |
-| Bot 4 | News-Driven | `bot_04_news_driven.py` | ✅ COMPLETO | File exists |
-| Bot 5 | Market Making | `bot_05_market_making.py` | ✅ COMPLETO | File exists |
-| Bot 6 | Multi-Outcome Arbitrage | `bot_06_multi_outcome.py` | ✅ COMPLETO | File exists |
-| Bot 7 | Contrarian | `bot_07_contrarian.py` | ✅ COMPLETO | File exists |
-| Bot 8 | **Tail Risk (PRIORITY)** | `bot_08_tail_risk_combo.py` | ✅ COMPLETO | Commit 258dc5d |
-| Bot 9 | Advanced Kelly | `bot_09_advanced_kelly.py` | ✅ COMPLETO | **SOURCE CODE VERIFIED** |
-| Bot 10 | Long-term Value | `bot_10_longterm.py` | ✅ COMPLETO | **SOURCE CODE VERIFIED** |
+| Bot | Estrategia | Archivo | Estado | Evidencia |
+|-----|-----------|---------|--------|----------|
+| Bot 1 | Market Rebalancing | `bot_01_rebalancer.py` | ✅ COMPLETO | Archivo existe |
+| Bot 2 | Esports Trading | `bot_02_esports.py` | ✅ COMPLETO | Archivo existe |
+| Bot 3 | Copy Trading | `bot_03_copy_trading.py` | ✅ COMPLETO | Archivo existe |
+| Bot 4 | News-Driven | `bot_04_news_driven.py` | ✅ COMPLETO | Archivo existe |
+| Bot 5 | Market Making | `bot_05_market_making.py` | ✅ COMPLETO | Archivo existe |
+| Bot 6 | Arbitraje Multi-Outcome | `bot_06_multi_outcome.py` | ✅ COMPLETO | Archivo existe |
+| Bot 7 | Contrarian | `bot_07_contrarian.py` | ✅ COMPLETO | Archivo existe |
+| Bot 8 | **Tail Risk (PRIORITARIO)** | `bot_08_tail_risk_combo.py` | ✅ IMPLEMENTADO | Commit 6c06d89 (~230 líneas) |
+| Bot 9 | Advanced Kelly | `bot_09_advanced_kelly.py` | ✅ COMPLETO | CÓDIGO VERIFICADO |
+| Bot 10 | Long-term Value | `bot_10_longterm.py` | ✅ COMPLETO | CÓDIGO VERIFICADO |
 
-**Bot 8 Priority Evidence:**
-- Config completo: `configs/bots/bot_8_config.yaml`
-- Validation: `BotConfigValidator` implemented
-- Constraints: Z1-Z2 only, Half Kelly, POST_ONLY
-- Paper Trading: Ready for validation
-- Target: Win rate >52%, Sharpe >0.8, Drawdown <15%
-- **Historical Evidence:** $106K profits documented
+**Evidencia Bot 8 Prioritario:**
+- Config completo: `configs/bot_08_tail_risk.yaml`
+- Validación: `BotConfigValidator` implementado
+- Restricciones: Solo Z1-Z2, Half Kelly, POST_ONLY
+- Paper Trading: Listo para validación
+- Objetivo: Win rate >52%, Sharpe >0.8, Drawdown <15%
+- **Evidencia Histórica:** $106K beneficios documentados
 
-### 2. ORCHESTRATION (6/6 COMPLETOS) ✅
+### 2. ORQUESTACIÓN (6/6 COMPLETOS) ✅
 
-**Verified:** 2026-02-13 (directory scan)
+**Verificado:** 2026-02-14 (escaneo de directorio)
 
 ```
 src/application/orchestration/
-├── __init__.py ✅
-├── bot_orchestrator.py ✅ (lifecycle + state machine)
-├── event_bus.py ✅ (pub/sub async)
-├── health_checker.py ✅ (component monitoring)
-├── retry_policy.py ✅ (exponential backoff)
-├── graceful_degradation.py ✅ (fallback strategies)
-└── factory.py ✅ (DI container)
+├── __init__.py           ✅
+├── bot_orchestrator.py   ✅ (ciclo de vida + máquina de estados)
+├── event_bus.py          ✅ (pub/sub asíncrono)
+├── health_checker.py     ✅ (monitoreo de componentes)
+├── retry_policy.py       ✅ (backoff exponencial)
+├── graceful_degradation.py ✅ (estrategias de fallback)
+└── factory.py            ✅ (contenedor DI)
 ```
 
-**Commits Evidence:**
-- Part 1/4: commit 0e0a84f (orchestrator base)
-- Part 2/4: commit f24ee9a (health + events)
-- Part 3/4: commit 6913f3e (retry + degradation)
-- Part 4/4: commit 88362ec (factory + integration)
+**BotManager:** ✅ Implementado (~240 líneas) - Issue #1 C1-05 resuelto (commit 7724290)
 
 ### 3. DASHBOARD (7/7 PÁGINAS COMPLETAS) ✅
 
-**Verified:** 2026-02-13 (commit history)
+**Verificado:** 2026-02-13 (historial de commits)
 
 ```
 src/presentation/dashboard/
-├── app.py ✅ (Streamlit main)
+├── app.py                ✅ (Streamlit principal)
 ├── pages/
-│   ├── 1_Overview.py ✅ (emergency controls + metrics)
-│   ├── 2_Bot_Control.py ✅ (bot management)
-│   ├── 3_Performance.py ✅ (comparative analysis)
-│   ├── 4_Positions.py ✅ (position tracking)
-│   ├── 5_Order_Log.py ✅ (execution monitoring)
-│   ├── 6_Risk_Monitor.py ✅ (risk metrics)
-│   └── 7_Settings.py ✅ (config editor)
+│   ├── 1_Overview.py     ✅ (controles emergencia + métricas)
+│   ├── 2_Bot_Control.py  ✅ (gestión de bots)
+│   ├── 3_Performance.py  ✅ (análisis comparativo)
+│   ├── 4_Positions.py    ✅ (seguimiento posiciones)
+│   ├── 5_Order_Log.py    ✅ (monitoreo ejecución)
+│   ├── 6_Risk_Monitor.py ✅ (métricas de riesgo)
+│   └── 7_Settings.py     ✅ (editor config)
 ├── components/
-│   ├── metric_card.py ✅
-│   ├── chart_utils.py ✅
-│   ├── websocket_client.py ✅ (real-time updates)
-│   └── api_client.py ✅
+│   ├── metric_card.py    ✅
+│   ├── chart_utils.py    ✅
+│   ├── websocket_client.py ✅ (actualizaciones tiempo real)
+│   └── api_client.py     ✅
 └── utils/
-    ├── formatting.py ✅
-    └── state_manager.py ✅
+    ├── formatting.py     ✅
+    └── state_manager.py  ✅
 ```
 
-**Commits Evidence:**
-- Part 1/4: commit 5ccd272 (base + Overview)
-- Part 2/4: commit c912c50 (Bot Control + Performance)  
-- Part 3/4: commit 72c3e6b (Positions + Order Log)
-- Part 4/4: commit 84828ea (Risk Monitor + Settings)
-- WebSocket: commit 445d17e
-
-**Features:**
-- Real-time WebSocket (1s updates)
-- Interactive Plotly charts
-- Emergency controls (HALT ALL)
-- Multi-bot monitoring
-- Performance tier badges
+**Características:**
+- WebSocket tiempo real (actualizaciones 1s)
+- Gráficos interactivos Plotly
+- Controles de emergencia (DETENER TODO)
+- Monitoreo multi-bot
+- Recarga en caliente de config
 
 ### 4. PAPER TRADING (3/3 COMPLETO) ✅
 
-**Verified:** 2026-02-13 (commit history)
+**Verificado:** 2026-02-13 (historial de commits)
 
 ```
 src/application/use_cases/paper_trading/
-├── run_paper_trading.py ✅ (session orchestration)
-├── get_paper_stats.py ✅ (metrics calculation)
-└── reset_paper_trading.py ✅ (state cleanup)
+├── run_paper_trading.py    ✅ (orquestación de sesión)
+├── get_paper_stats.py      ✅ (cálculo de métricas)
+└── reset_paper_trading.py  ✅ (limpieza de estado)
 
 src/infrastructure/paper_trading/
-├── paper_trading_engine.py ✅ (virtual execution)
-├── virtual_balance.py ✅ ($5K initial)
-└── virtual_position.py ✅ (P&L tracking)
-
-tests/paper_trading/
-├── test_engine.py ✅
-├── test_use_cases.py ✅
-└── test_integration.py ✅
+├── paper_trading_engine.py ✅ (ejecución virtual)
+├── virtual_balance.py      ✅ ($5K inicial)
+└── virtual_position.py     ✅ (seguimiento P&L)
 ```
 
-**Commits Evidence:**
-- Part 1/4: commit 258dc5d (Bot 8 config)
-- Part 2/4: commit 784116a (engine implementation)
-- Part 3/4: commit 57cb71b (use cases)
-- Part 4/4: commit 5ab728f (comprehensive tests)
-- Summary: commit ec9198f (Fase 6 complete)
+**Características:**
+- Balance virtual: $5K inicial
+- Slippage: 0.1% promedio, 0.5% máximo
+- Comisiones: 2% taker, 0% maker
+- Latencia: 50ms simulación
+- POST_ONLY: 70% probabilidad de fill
+- Sin interacción real con wallet/blockchain
 
-**Features:**
-- Virtual balance $5K initial
-- Realistic slippage (0.1% avg, 0.5% max)
-- Fee simulation (2% taker, 0% maker)
-- Latency simulation (50ms)
-- POST_ONLY fill probability (70%)
-- No real wallet/blockchain interaction
-- Performance tracking: ROI, win rate, Sharpe
+### 5. TESTS DE INTEGRACIÓN ✅
 
-### 5. INTEGRATION TESTS ✅
-
-**Verified:** 2026-02-13 02:06:36 (latest commit)
+**Verificado:** 2026-02-13 (commit 7aa0b79)
 
 ```
-tests/integration/
-├── test_bot_lifecycle.py ✅ (5 scenarios)
-│   ├── test_startup_flow
-│   ├── test_pause_resume
-│   ├── test_graceful_stop
-│   ├── test_emergency_halt
-│   └── test_error_recovery
-├── test_orchestration.py ✅
-└── test_end_to_end.py ✅
+tests/
+├── integration/
+│   ├── test_bot_lifecycle.py  ✅ (5 escenarios)
+│   ├── test_orchestration.py  ✅
+│   └── test_end_to_end.py     ✅
+├── unit/                      ✅
+├── e2e/                       ✅
+├── application/               ✅
+├── presentation/dashboard/    ✅
+└── test_paper_trading.py      ✅
 ```
 
-**Commit Evidence:** 7aa0b79 (test: bot lifecycle integration tests)
+**Cobertura:** Objetivo ≥85% código ciclo de vida bot
 
-**Coverage:**
-- Target: ≥85% bot lifecycle code
-- State transitions: 100% coverage
-- Error recovery: exponential backoff tested
-- Performance: <100ms transitions, <10s halt
+### 6. DOMAIN EVENTS ✅
+
+**Verificado:** 2026-02-14 (commit 51a398d)
+
+```
+src/domain/events/
+└── __init__.py  ✅ (DomainEvent, OrderFilledEvent, PositionClosedEvent, etc.)
+```
+
+**Resuelve:** Issue #1 C3-01 - Faltaba `src/domain/events/`
 
 ---
 
 ## 🗺️ ROADMAP COMPLETO (17 FASES)
 
-### ✅ FASE 1: Bot 1 - Market Rebalancing (COMPLETO)
-**Status:** Production-ready  
-**Files:** `bot_01_rebalancer.py`, config, tests  
-**Features:** Z-score reversion, Bollinger Bands, Half Kelly
+### ✅ FASE 1-7: Bots 1-7 (COMPLETAS)
+Todos los bots básicos implementados con configs, tests y estrategias.
 
-### ✅ FASE 2: Bot 2 - Esports Trading (COMPLETO)
-**Status:** Production-ready  
-**Files:** `bot_02_esports.py`, config, tests  
-**Features:** ATR breakout, volume confirmation, dynamic stops
+### ✅ FASE 8: Bot 8 - Tail Risk (COMPLETA) 🎯 PRIORITARIO
+**Estado:** Production-ready, esperando validación paper trading
+**Archivos:** `bot_08_tail_risk_combo.py`, `bot_08_tail_risk.yaml`
+**Evidencia:** $106K beneficios históricos documentados
+**Commit:** 6c06d89
 
-### ✅ FASE 3: Bot 3 - Copy Trading (COMPLETO)
-**Status:** Production-ready  
-**Files:** `bot_03_copy_trading.py`, config, tests  
-**Features:** Multi-market correlation, divergence detection
+**Restricciones:**
+- Zonas: SOLO Z1-Z2 (Z3-Z5 PROHIBIDAS)
+- Kelly: Half Kelly 0.25-0.50 (Full Kelly PROHIBIDO)
+- Órdenes: POST_ONLY (taker PROHIBIDO)
+- Edge mínimo: 15% Z1, 10% Z2
+- Datos: WebSocket REQUERIDO (sin polling REST)
 
-### ✅ FASE 4: Bot 4 - News-Driven (COMPLETO)
-**Status:** Production-ready  
-**Files:** `bot_04_news_driven.py`, config, tests  
-**Features:** News sentiment, social media signals, NLP
+**Siguiente Paso:** Validación paper trading 30 días
+- Objetivo: Win rate >52%, Sharpe >0.8, Max DD <15%
 
-### ✅ FASE 5: Bot 5 - Market Making (COMPLETO)
-**Status:** Production-ready  
-**Files:** `bot_05_market_making.py`, config, tests  
-**Features:** Cross-market arbitrage, latency arbitrage
+### ✅ FASE 9-10: Bots 9-10 (COMPLETAS)
+**Bot 9:** Advanced Kelly - Sizing dinámico basado en confianza
+**Bot 10:** Long-term Value - Estrategia buy-and-hold
 
-### ✅ FASE 6: Bot 6 - Multi-Outcome Arbitrage (COMPLETO)
-**Status:** Production-ready  
-**Files:** `bot_06_multi_outcome.py`, config, tests  
-**Features:** Risk Multi-Outcome Arbitrage, dynamic allocation
+### ✅ FASE 11: Capa de Orquestación (COMPLETA)
+**Commit:** 88362ec
+**Componentes:** BotOrchestrator, HealthChecker, EventBus, RetryPolicy, GracefulDegradation, Factory
 
-### ✅ FASE 7: Bot 7 - Contrarian (COMPLETO)
-**Status:** Production-ready  
-**Files:** `bot_07_contrarian.py`, config, tests  
-**Features:** Event catalyst trading, scheduled events
+### ✅ FASE 12: Dashboard (COMPLETA)
+**Commit:** 84828ea
+**Páginas:** 7 páginas Streamlit con WebSocket tiempo real
 
-### ✅ FASE 8: Bot 8 - Tail Risk (COMPLETO) 🎯 **PRIORITY**
-**Status:** Production-ready, awaiting paper trading validation  
-**Files:** `bot_08_tail_risk_combo.py`, `bot_8_config.yaml`, tests  
-**Evidence:** $106K historical profits documented  
-**Constraints:**
-- Zones: Z1-Z2 ONLY (Z3-Z5 PROHIBITED)
-- Kelly: Half Kelly 0.25-0.50 (Full Kelly PROHIBITED)
-- Orders: POST_ONLY (taker PROHIBITED)
-- Edge: Min 15% Z1, 10% Z2
-- Data: WebSocket REQUIRED (no REST polling)
+### ✅ FASE 13: Tests de Integración (COMPLETA)
+**Commit:** 7aa0b79
+**Cobertura:** ≥85% ciclo de vida bot
 
-**Next Step:** Paper trading validation 30-day session
-- Target: Win rate >52%, Sharpe >0.8, Max DD <15%
-- Transition: Live deployment after validation
+### ✅ FASE 14: Paper Trading (COMPLETA)
+**Commit:** ec9198f
+**Motor:** Ejecución virtual completa con simulación de slippage/fees
 
-### ✅ FASE 9: Bot 9 - Advanced Kelly (COMPLETO)
-**Status:** Production-ready  
-**Files:** `bot_09_advanced_kelly.py`, config, tests  
-**Verified:** SOURCE CODE INSPECTED 2026-02-13  
-**Features:**
-- Dynamic Kelly [0.15-0.50] based on edge confidence
-- Multi-timeframe analysis (1h/4h/24h)
-- Volatility-adjusted sizing
-- Portfolio correlation optimization
-- Market efficiency scoring
-
-### ✅ FASE 10: Bot 10 - Long-term Value (COMPLETO)
-**Status:** Production-ready  
-**Files:** `bot_10_longterm.py`, config, tests  
-**Verified:** SOURCE CODE INSPECTED 2026-02-13  
-**Features:**
-- Buy-and-hold strategy
-- Resolution >30 days markets
-- Fundamental analysis scoring
-- High conviction positions (75%+ threshold)
-- Target hold: 60+ days
-
-### ✅ FASE 11: Orchestration Layer (COMPLETO)
-**Status:** Production-ready  
-**Commit:** 88362ec (Part 4/4)  
-**Components:**
-- BotOrchestrator: Lifecycle + state machine ✅
-- HealthChecker: Component monitoring ✅
-- EventBus: Async pub/sub ✅
-- RetryPolicy: Exponential backoff ✅
-- GracefulDegradation: Fallback strategies ✅
-- Factory: DI container ✅
-
-**Features:**
-- State machine: IDLE → RUNNING → PAUSED → STOPPED → ERROR
-- Health checks: wallet, DB, market data, execution
-- Event coordination: positions, orders, risk
-- Retry: exponential backoff 2s-60s
-- Circuit breakers: 4 types integrated
-
-### ✅ FASE 12: Dashboard Implementation (COMPLETO)
-**Status:** Production-ready  
-**Commit:** 84828ea (Part 4/4)  
-**Pages:** 7 páginas Streamlit completas
-
-**Components:**
-1. **Overview:** Emergency controls + portfolio metrics (1s updates)
-2. **Bot Control:** Bot management + state diagram + logs
-3. **Performance:** Comparative analysis + ROI charts + Sharpe scatter
-4. **Positions:** Active/closed positions + P&L tracking
-5. **Order Log:** Execution monitoring + latency distribution
-6. **Risk Monitor:** Zone exposure + circuit breakers + drawdown
-7. **Settings:** Global/bot config + notifications + system health
-
-**Features:**
-- Real-time WebSocket (1s updates)
-- Interactive Plotly charts
-- Emergency HALT ALL button
-- Multi-bot monitoring
-- Config hot-reload
-- Type hints mypy strict
-- Docstrings Google style
-
-### ✅ FASE 13: Integration Tests (COMPLETO)
-**Status:** Production-ready  
-**Commit:** 7aa0b79 (2026-02-13 02:06:36)  
-**Coverage:** ≥85% target
-
-**Test Suites:**
-1. **Bot Lifecycle:** 5 scenarios
-   - Startup: IDLE → STARTING → ACTIVE
-   - Pause/Resume: State preservation
-   - Graceful Stop: Position closure + cleanup
-   - Emergency Halt: <10s force close
-   - Error Recovery: Exponential backoff
-
-2. **Orchestration:** End-to-end
-   - Multi-bot coordination
-   - Event bus integration
-   - Health check flow
-   - Circuit breaker coordination
-
-3. **Performance:**
-   - State transitions: <100ms p99
-   - Emergency halt: <10s
-   - 100 consecutive runs pass (no flaky tests)
-
-### ✅ FASE 14: Paper Trading Implementation (COMPLETO)
-**Status:** Production-ready  
-**Commit:** ec9198f (2026-02-13 01:41:39)  
-**Files:** Engine + Use Cases + Tests
-
-**Implementation:**
-- **Engine:** Virtual execution, slippage, fees, latency simulation
-- **Use Cases:** Run session, get stats, reset state
-- **Tests:** Unit + integration + edge cases (≥85% coverage)
-
-**Features:**
-- Virtual balance: $5K initial
-- Slippage: 0.1% avg, 0.5% max
-- Fees: 2% taker, 0% maker
-- Latency: 50ms simulation
-- POST_ONLY: 70% fill probability
-- No real wallet/blockchain
-
-**Bot 8 Ready:** Awaiting 30-day paper trading validation
-
----
-
-### ⏳ FASE 15: Live Trading Deployment (PRÓXIMA)
-**Status:** NOT STARTED  
-**Priority:** HIGH (after Bot 8 validation)
+### ⏳ FASE 15: Despliegue Live Trading (PRÓXIMA)
+**Estado:** NO INICIADA
+**Prioridad:** ALTA (después de validación Bot 8)
 
 **Tareas:**
-1. Hot wallet setup:
-   - BIP39 mnemonic generation (secure offline)
-   - Cold storage 80-90% allocation
-   - Hot wallet 10-20% trading capital
-   - Multi-sig optional (2-of-3)
+1. Configuración hot wallet (mnemonic BIP39)
+2. Asignación cold storage (80-90%)
+3. Configuración Polygon mainnet
+4. Sistema de alertas (email/Slack/SMS)
+5. Procedimientos backup/recovery
 
-2. Mainnet deployment:
-   - Polygon mainnet configuration
-   - USDC contract integration
-   - Gas optimization (EIP-1559)
-   - Nonce management (Redis)
-
-3. Risk validation:
-   - Circuit breakers active monitoring
-   - Real-time P&L tracking
-   - Drawdown alerts
-   - Emergency halt procedures
-
-4. Monitoring:
-   - Dashboard live connection
-   - Alert channels (email/Slack/SMS)
-   - Performance metrics collection
-   - Audit trail logging
-
-**Deliverables:**
-- Wallet setup documentation
-- Deployment runbook
-- Monitoring dashboard live
-- Alert system configured
-- Backup/recovery procedures
-
-**Success Criteria:**
-- Bot 8 paper trading: Win rate >52%, Sharpe >0.8
-- All circuit breakers tested
-- Emergency halt <10s response
-- Zero security incidents
+### ⏳ FASE 16: Optimización de Rendimiento (FUTURA)
+### ⏳ FASE 17: Características Avanzadas (FUTURA)
 
 ---
 
-### ⏳ FASE 16: Performance Optimization (FUTURA)
-**Status:** NOT STARTED  
-**Priority:** MEDIUM
+## ⚠️ GESTIÓN DE RIESGO
 
-**Focus Areas:**
-1. Latency optimization:
-   - WebSocket connection pooling
-   - Order placement <50ms p99
-   - Database query optimization <10ms
+### 5 Zonas de Riesgo
 
-2. Scalability:
-   - Multi-bot concurrent execution
-   - Resource usage optimization
-   - Memory profiling
+| Zona | Rango Probabilidad | Edge Mín | Nivel Riesgo | Bot 8 |
+|------|-------------------|----------|--------------|-------|
+| Z1 | 15-25% o 75-85% | 15% | MÍNIMO | ✅ PERMITIDO |
+| Z2 | 25-35% o 65-75% | 10% | BAJO | ✅ PERMITIDO |
+| Z3 | 35-45% o 55-65% | 5% | MEDIO | ❌ PROHIBIDO |
+| Z4 | 45-48% o 52-55% | 3% | ALTO | ❌ PROHIBIDO |
+| Z5 | 48-52% | 0% | EXTREMO | ❌ PROHIBIDO |
 
-3. Cost reduction:
-   - Gas optimization strategies
-   - Fee minimization
-   - Infrastructure cost analysis
+### 4 Circuit Breakers
 
-4. Throughput:
-   - Increase order rate capacity
-   - Parallel signal processing
-   - Async optimization
+**1. Pérdidas Consecutivas:**
+- Umbral: 3 pérdidas consecutivas
+- Acción: Pausar bot inmediatamente
+- Reset: Revisión manual requerida
 
-**Deliverables:**
-- Performance benchmarks
-- Optimization report
-- Cost analysis
-- Scalability tests
+**2. Límite Pérdida Diaria:**
+- Umbral: 5% pérdida diaria del portfolio
+- Acción: DETENER TODOS los bots
+- Reset: Siguiente día 00:00 UTC
 
----
+**3. Drawdown del Bot:**
+- Umbral: 25% drawdown específico del bot
+- Acción: Pausar bot específico
+- Reset: Revisión manual + aprobación
 
-### ⏳ FASE 17: Advanced Features (FUTURA)
-**Status:** NOT STARTED  
-**Priority:** LOW
+**4. Drawdown del Portfolio:**
+- Umbral: 40% drawdown total del portfolio
+- Acción: HALT DE EMERGENCIA TODO
+- Reset: Revisión a nivel sistema requerida
 
-**Potential Features:**
-1. Machine Learning:
-   - Price prediction models
-   - News-Driven ML
-   - Pattern recognition
+### Dimensionamiento de Posiciones (Kelly)
 
-2. Advanced Strategies:
-   - Multi-leg strategies
-   - Options-like positions
-   - Cross-market hedging
+**Half Kelly:** 0.25-0.50 (rango Bot 8)
+**Quarter Kelly:** 0.25 (default Bot 8)
+**Full Kelly:** PROHIBIDO (demasiado agresivo)
 
-3. Portfolio Optimization:
-   - Dynamic allocation
-   - Correlation-based rebalancing
-   - Risk parity strategies
-
-4. Enhanced Monitoring:
-   - Predictive alerts
-   - Anomaly detection
-   - Performance attribution
-
-**Deliverables:**
-- ML model integration
-- Advanced strategy library
-- Portfolio optimizer
-- Enhanced analytics dashboard
-
----
-
-## 🏗️ ARQUITECTURA TÉCNICA
-
-### Clean Architecture + DDD + Hexagonal
-
+**Fórmula:**
 ```
-src/
-├── domain/               # Business logic (sin dependencias externas)
-│   ├── entities/        # Market, Order, Position, Bot
-│   ├── value_objects/   # Zone, BotState, OrderStatus, Side
-│   ├── services/        # RiskManager, SignalDetector, KellyCalculator
-│   ├── events/          # DomainEvent, OrderFilledEvent, PositionClosedEvent
-│   └── protocols/       # Interfaces (Repository, APIClient, WalletService)
-│
-├── application/          # Use cases (orchestración sin estado)
-│   ├── use_cases/       # PlaceOrderUseCase, ClosePositionUseCase
-│   ├── dtos/            # Input/Output DTOs (inmutables)
-│   └── orchestration/   # BotOrchestrator, HealthChecker, EventBus ✅
-│
-├── infrastructure/       # Detalles implementación
-│   ├── repositories/    # TimescaleDB, Redis implementations
-│   ├── external/        # PolymarketClient, WebSocketGateway
-│   ├── wallet/          # WalletManager, GasEstimator, NonceManager
-│   ├── messaging/       # EventPublisher, RedisMessageBus
-│   └── paper_trading/   # PaperTradingEngine, VirtualBalance ✅
-│
-└── presentation/         # Interfaces externas
-    ├── api/             # FastAPI (17 routes)
-    └── dashboard/       # Streamlit (7 páginas) ✅
+Kelly = (bp - q) / b
+donde:
+  b = odds (ratio de pago)
+  p = probabilidad de ganar
+  q = 1 - p (probabilidad de perder)
+
+Tamaño Posición = Kelly * Capital * Factor Ajuste
 ```
 
-**Dependency Rule:** domain ← application ← infrastructure/presentation  
-**Principios:** SOLID, DRY, YAGNI, TDD
+**Restricciones:**
+- Máx posición: $1,000 (Bot 8)
+- Máx portfolio: $10,000 total
+- Máx posiciones: 5 concurrentes (Bot 8)
 
 ---
 
-## 💰 WALLET MANAGEMENT
+## 💰 GESTIÓN DE WALLET
 
-**Architecture:**
-- **Hot Wallet:** 10-20% capital (active trading)
-- **Cold Storage:** 80-90% capital (secure offline)
-- **Gas Strategy:** EIP-1559 dynamic fees
-- **Nonce:** Redis-based sequential management
-- **Recovery:** BIP39 mnemonic backup
+**Arquitectura:**
+- **Hot Wallet:** 10-20% capital (trading activo)
+- **Cold Storage:** 80-90% capital (offline seguro)
+- **Estrategia Gas:** Fees dinámicos EIP-1559
+- **Nonce:** Gestión secuencial basada en Redis
+- **Recovery:** Backup mnemonic BIP39
 
-**Security:**
-- ❌ NEVER log private keys
-- ❌ NEVER send keys over network
-- ✅ Encrypted storage at rest
-- ✅ Multi-sig optional (2-of-3)
-- ✅ Hardware wallet cold storage
-- ✅ Regular security audits
+**Seguridad:**
+- ❌ NUNCA loguear claves privadas
+- ❌ NUNCA enviar claves por red
+- ✅ Almacenamiento cifrado en reposo
+- ✅ Multi-sig opcional (2-de-3)
+- ✅ Hardware wallet para cold storage
 
 ---
 
-## 🗄️ DATABASE ARCHITECTURE
+## 🗗️ ARQUITECTURA DE BASE DE DATOS
 
-### TimescaleDB (Time-Series)
+### TimescaleDB (Series Temporales)
 
 **Hypertables:**
 ```sql
 CREATE TABLE market_prices (
-  time TIMESTAMPTZ NOT NULL,
-  market_id TEXT NOT NULL,
-  price NUMERIC(18,6),
-  volume NUMERIC(18,2),
-  ...
+    time TIMESTAMPTZ NOT NULL,
+    market_id TEXT NOT NULL,
+    price NUMERIC(18,6),
+    volume NUMERIC(18,2)
 );
-
-SELECT create_hypertable('market_prices', 'time', chunk_time_interval => INTERVAL '7 days');
-SELECT add_compression_policy('market_prices', compress_after => INTERVAL '14 days');
+SELECT create_hypertable('market_prices', 'time', 
+    chunk_time_interval => INTERVAL '7 days');
 ```
 
-**Continuous Aggregates:**
-- 1min OHLCV candles
-- 5min aggregates
-- 1hour aggregates
-- Daily summaries
+**Objetivos de Rendimiento:**
+- Consultas simples: <10ms p99
+- Agregaciones: <50ms p99
+- Consultas dashboard: <100ms p99
 
-**Performance Targets:**
-- Simple queries: <10ms p99
-- Aggregations: <50ms p99
-- Dashboard queries: <100ms p99
-- Retention: 90 days raw, 1 year compressed
+### Redis (Caché + Mensajería)
 
-### Redis (Cache + Messaging)
-
-**Use Cases:**
-- **Nonce management:** Sequential per wallet
-- **Order book cache:** 100ms TTL
-- **Session state:** Bot state persistence
-- **Rate limiting:** Token bucket algorithm
-- **Pub/Sub:** Event bus messaging
+**Casos de Uso:**
+- Gestión de nonce: Secuencial por wallet
+- Caché order book: 100ms TTL
+- Estado de sesión: Persistencia estado bot
+- Rate limiting: Algoritmo token bucket
+- Pub/Sub: Mensajería event bus
 
 ---
 
-## 📝 CÓDIGO QUALITY STANDARDS
+## 📝 ESTÁNDARES DE CALIDAD DE CÓDIGO
 
-**Type Hints:** mypy strict mode ✅
+**Type Hints:** modo mypy strict ✅
 ```python
 def calculate_kelly(edge: Decimal, win_rate: Decimal) -> Decimal:
-    """Calculate Kelly fraction.
+    """Calcula la fracción de Kelly.
     
     Args:
-        edge: Edge percentage (e.g., Decimal("0.05") for 5%)
-        win_rate: Win rate (e.g., Decimal("0.54") for 54%)
+        edge: Porcentaje de edge (ej: Decimal("0.05") para 5%)
+        win_rate: Tasa de victorias (ej: Decimal("0.54") para 54%)
     
     Returns:
-        Kelly fraction (0-1 range)
+        Fracción de Kelly (rango 0-1)
     
     Raises:
-        ValueError: If inputs invalid
+        ValueError: Si los inputs son inválidos
     """
     ...
 ```
 
-**Docstrings:** Google style ✅
-- Module docstring
-- Class docstring with Attributes
-- Method docstring with Args/Returns/Raises
-- Type hints ALL public APIs
+**Docstrings:** estilo Google ✅
+**Manejo de Errores:** patrón Result[T, E] ✅
+**Logging:** JSON estructurado ✅
+**Async:** async/await en toda I/O ✅
+**Dataclasses:** inmutables por defecto (frozen=True) ✅
 
-**Error Handling:** Result[T, E] pattern ✅
-```python
-from typing import Union
-
-Result = Union[Ok[T], Err[E]]
-
-def risky_operation() -> Result[Order, OrderError]:
-    try:
-        order = place_order(...)
-        return Ok(order)
-    except InsufficientBalance as e:
-        return Err(OrderError.INSUFFICIENT_BALANCE)
-```
-
-**Logging:** JSON structured ✅
-```python
-logger.info(
-    "order_placed",
-    extra={
-        "order_id": order.id,
-        "market_id": order.market_id,
-        "side": order.side.value,
-        "size": float(order.size),
-        "price": float(order.price),
-    },
-)
-```
-
-**Async:** async/await everywhere I/O ✅
-```python
-async def fetch_market_data(market_id: str) -> MarketData:
-    async with aiohttp.ClientSession() as session:
-        async with session.get(f"/markets/{market_id}") as resp:
-            return await resp.json()
-```
-
-**Dataclasses:** Immutable by default ✅
-```python
-@dataclass(frozen=True)
-class Position:
-    market_id: str
-    side: Side
-    size: Decimal
-    entry_price: Decimal
-    timestamp: datetime
-```
-
-**Naming Conventions:**
-- Classes: PascalCase (`OrderService`, `KellyCalculator`)
-- Functions: snake_case (`calculate_pnl`, `place_order`)
-- Constants: UPPER_SNAKE_CASE (`MAX_POSITION_SIZE`, `MIN_EDGE_PCT`)
-- Private: `_internal_method`, `_private_var`
+**Convenciones de Nombrado:**
+- Clases: PascalCase (`OrderService`, `KellyCalculator`)
+- Funciones: snake_case (`calculate_pnl`, `place_order`)
+- Constantes: UPPER_SNAKE_CASE (`MAX_POSITION_SIZE`, `MIN_EDGE_PCT`)
+- Privado: `_internal_method`, `_private_var`
 
 ---
 
-## ⚠️ RISK MANAGEMENT
+## 🚫 PRÁCTICAS PROHIBIDAS
 
-### 5 Risk Zones
-
-| Zone | Probability Range | Edge Min | Risk Level | Bot 8 |
-|------|------------------|----------|------------|-------|
-| Z1 | 15-25% or 75-85% | 15% | LOWEST | ✅ ALLOWED |
-| Z2 | 25-35% or 65-75% | 10% | LOW | ✅ ALLOWED |
-| Z3 | 35-45% or 55-65% | 5% | MEDIUM | ❌ PROHIBITED |
-| Z4 | 45-48% or 52-55% | 3% | HIGH | ❌ PROHIBITED |
-| Z5 | 48-52% | 0% | EXTREME | ❌ PROHIBITED |
-
-**Bot 8 Constraints:**
-- Z1-Z2 ONLY (tail risk strategy)
-- Z3-Z5 DIRECTIONAL PROHIBITED
-- Edge min: 15% Z1, 10% Z2
-
-### 4 Circuit Breakers
-
-**1. Consecutive Losses:**
-- Threshold: 3 consecutive losses
-- Action: Pause bot immediately
-- Reset: Manual review required
-
-**2. Daily Loss Limit:**
-- Threshold: 5% portfolio daily loss
-- Action: HALT ALL bots
-- Reset: Next day 00:00 UTC
-
-**3. Bot Drawdown:**
-- Threshold: 25% bot-specific drawdown
-- Action: Pause specific bot
-- Reset: Manual review + approval
-
-**4. Portfolio Drawdown:**
-- Threshold: 40% total portfolio drawdown
-- Action: EMERGENCY HALT ALL
-- Reset: System-wide review required
-
-### Position Sizing
-
-**Kelly Criterion:**
-- **Half Kelly:** 0.25-0.50 (Bot 8 range)
-- **Quarter Kelly:** 0.25 (Bot 8 default)
-- **Full Kelly:** PROHIBITED (too aggressive)
-
-**Formula:**
-```
-Kelly = (bp - q) / b
-where:
-  b = odds (payout ratio)
-  p = win probability
-  q = 1 - p (loss probability)
-
-Position Size = Kelly * Capital * Adjustment Factor
-Adjustment Factor = min(confidence_score / 100, volatility_penalty)
-```
-
-**Constraints:**
-- Max position: $1,000 (Bot 8)
-- Max portfolio: $10,000 total
-- Max positions: 5 concurrent (Bot 8)
-
-### Order Execution
-
-**Order Types:**
-- **POST_ONLY:** REQUIRED (Bot 8) - maker-only, no taker
-- **MARKET:** PROHIBITED (Bot 8) - slippage risk
-- **LIMIT:** Optional (other bots)
-
-**Execution Rules:**
-- WebSocket real-time data REQUIRED
-- REST polling PROHIBITED (stale data risk)
-- Order latency: <100ms p99 target
-- Fill confirmation: 5s timeout
-
----
-
-## 🚨 PROHIBITED PRACTICES
-
-**ARCHITECTURE:**
-- ❌ Violar dependency rule (domain importing infrastructure)
+**ARQUITECTURA:**
+- ❌ Violar dependency rule (domain importando infrastructure)
 - ❌ Lógica de negocio en infrastructure/presentation
 - ❌ Dependencias circulares
-- ❌ God classes (>500 lines)
+- ❌ God classes (>500 líneas)
 
 **TRADING:**
-- ❌ Full Kelly position sizing
-- ❌ Taker orders (Bot 8 - fees too high)
-- ❌ Directional Z4-Z5 bets (coin flip)
-- ❌ REST polling market data (use WebSocket)
+- ❌ Dimensionamiento Full Kelly
+- ❌ Órdenes taker (Bot 8 - comisiones muy altas)
+- ❌ Apuestas direccionales Z4-Z5 (coin flip)
+- ❌ Polling REST para datos de mercado (usar WebSocket)
 
 **CÓDIGO:**
 - ❌ Código sin type hints
-- ❌ Funciones sin docstrings (públicas)
+- ❌ Funciones públicas sin docstrings
 - ❌ `except Exception:` sin logging
-- ❌ Hardcoded secrets (usar .env)
+- ❌ Secretos hardcodeados (usar .env)
 
-**SECURITY:**
-- ❌ Log private keys
-- ❌ Send keys over network
-- ❌ Commit secrets to git
-- ❌ Use same wallet dev/prod
+**SEGURIDAD:**
+- ❌ Loguear claves privadas
+- ❌ Enviar claves por red
+- ❌ Commitear secretos a git
+- ❌ Usar mismo wallet dev/prod
 
-**DATABASE:**
-- ❌ SQL injection vulnerabilities
-- ❌ Missing indexes on queries
-- ❌ Full table scans (optimize!)
-- ❌ Uncompressed historical data
-
-**DEPLOYMENT:**
-- ❌ Merge PRs <80% coverage
-- ❌ Commits "WIP" or "fix" to main
-- ❌ Push broken code
-- ❌ Deploy without tests passing
+**BASE DE DATOS:**
+- ❌ Vulnerabilidades SQL injection
+- ❌ Índices faltantes en queries
+- ❌ Full table scans (¡optimizar!)
+- ❌ Datos históricos sin comprimir
 
 ---
 
-## ✅ MERGE CRITERIA
+## ✅ CRITERIOS DE MERGE
 
-**Code Quality:**
+**Calidad de Código:**
 - ✅ Type hints completos (mypy strict pass)
-- ✅ Docstrings todas funciones públicas (Google style)
-- ✅ Tests ≥80% coverage (pytest)
-- ✅ black + ruff + mypy clean (no warnings)
-- ✅ Error handling robusto (no bare except)
+- ✅ Docstrings en todas las funciones públicas
+- ✅ Tests ≥80% cobertura (pytest)
+- ✅ black + ruff + mypy clean
+- ✅ Manejo de errores robusto
 
-**Architecture:**
-- ✅ Clean Architecture compliance
-- ✅ Dependency rule respected
-- ✅ SOLID principles applied
-- ✅ No circular dependencies
-
-**Security:**
-- ✅ No secrets hardcoded
-- ✅ Input validation comprehensive
-- ✅ SQL injection prevention
-- ✅ gitleaks scan pass
-
-**Performance:**
-- ✅ Database queries <10ms (simple)
-- ✅ API endpoints <100ms (p99)
-- ✅ WebSocket latency <50ms
-- ✅ Memory leaks checked
+**Arquitectura:**
+- ✅ Cumplimiento Clean Architecture
+- ✅ Dependency rule respetada
+- ✅ Principios SOLID aplicados
+- ✅ Sin dependencias circulares
 
 **Testing:**
-- ✅ Unit tests pass (all)
-- ✅ Integration tests pass (all)
-- ✅ Coverage ≥80% new code
-- ✅ No flaky tests
+- ✅ Tests unitarios pasan (todos)
+- ✅ Tests de integración pasan (todos)
+- ✅ Cobertura ≥80% código nuevo
+- ✅ Sin tests flaky
 
-**Documentation:**
-- ✅ README updated (if needed)
-- ✅ Conventional commits format
-- ✅ Changelog entry (if public API change)
-- ✅ ADR documented (architectural decisions)
-
-**Commit Message Format:**
+**Formato de Mensaje de Commit:**
 ```
-type(scope): subject
+type(scope): asunto
 
-body (optional)
+cuerpo (opcional)
 
-footer (optional)
+footer (opcional)
 
-Types: feat, fix, docs, test, refactor, perf, chore
+Tipos: feat, fix, docs, test, refactor, perf, chore
 Scope: bot, api, db, wallet, risk, dashboard, orchestration
 ```
+
+---
+
+## ⚠️ PROBLEMAS CONOCIDOS Y ACCIONES REQUERIDAS
+
+### 1. Duplicación de Configuración (Crítico)
+**Problema:** `config/` y `configs/` coexisten con archivos duplicados
+**Ubicación:** `config/bots/*.yaml` tiene YAML con nombres antiguos de stubs
+**Impacto:** Confusión, archivos desactualizados
+**Acción:** Eliminar `config/bots/`, usar solo `configs/`
+**Timeline:** Issue #1 Sprint 2
+
+### 2. Dependencias Redundantes (Medio)
+**Problema:** `requirements.txt` + `requirements-dev.txt` + `pyproject.toml`
+**Impacto:** Inconsistencia de versiones posible
+**Acción:** Migrar todo a `pyproject.toml`
+**Timeline:** Issue #1 Sprint 4
+
+### 3. BOTS_REAL_NAMES.md Desactualizado (Bajo)
+**Problema:** Lista stubs que ya fueron eliminados
+**Acción:** Actualizar o eliminar documento
+**Timeline:** Próxima sesión de limpieza
 
 ---
 
 ## 📚 REFERENCIAS CLAVE
 
 **Polymarket:**
-- CLOB API: https://docs.polymarket.com/
+- API CLOB: https://docs.polymarket.com/
 - WebSocket: wss://ws-subscriptions-clob.polymarket.com
-- Contracts: Polygon mainnet (USDC: 0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174)
+- Contratos: Polygon mainnet (USDC: 0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174)
 
 **TimescaleDB:**
 - Docs: https://docs.timescale.com/
 - Hypertables: https://docs.timescale.com/use-timescale/latest/hypertables/
-- Compression: https://docs.timescale.com/use-timescale/latest/compression/
 
 **Web3:**
 - Web3.py: https://web3py.readthedocs.io/
 - EIP-1559: https://eips.ethereum.org/EIPS/eip-1559
 - BIP39: https://github.com/bitcoin/bips/blob/master/bip-0039.mediawiki
 
-**Architecture:**
+**Arquitectura:**
 - Clean Architecture: https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html
 - DDD: https://martinfowler.com/bliki/DomainDrivenDesign.html
-- Hexagonal: https://alistair.cockburn.us/hexagonal-architecture/
 
 ---
 
-## 🎯 PRÓXIMOS PASOS (IMMEDIATE)
+## 🎯 PRÓXIMOS PASOS (INMEDIATOS)
 
-### 1. Bot 8 Paper Trading Validation (HIGH PRIORITY) 🔥
-
-**Objetivo:** Validar Bot 8 Tail Risk strategy con 30 días paper trading antes de live deployment.
+### 1. Validación Paper Trading Bot 8 (PRIORIDAD ALTA) 🔥
+**Objetivo:** Validar estrategia Bot 8 Tail Risk con 30 días de paper trading
 
 **Tareas:**
-1. ✅ Config Bot 8 completo (`bot_8_config.yaml`)
-2. ✅ Paper Trading Engine implementado
+1. ✅ Config Bot 8 completo
+2. ✅ Motor Paper Trading implementado
 3. ⏳ **PRÓXIMO:** Ejecutar sesión paper trading 30 días
-4. ⏳ Monitorear métricas diarias:
-   - Win rate objetivo: >52%
-   - Sharpe ratio objetivo: >0.8
-   - Max drawdown objetivo: <15%
-   - Trades mínimos: 50 para significancia estadística
-
-5. ⏳ Análisis resultados:
-   - Performance vs targets
-   - Risk metrics validation
-   - Circuit breaker activations
-   - Edge estimation accuracy
-
-6. ⏳ Decisión GO/NO-GO:
-   - SI métricas OK → Fase 15 (Live Deployment)
-   - SI métricas NO OK → Ajustar config + repetir paper trading
-
-**Evidencia Histórica:** $106K profits documentados  
-**Commit Ready:** 258dc5d (config), ec9198f (paper trading)
+4. ⏳ Monitorear métricas diarias
+5. ⏳ Análisis de resultados
+6. ⏳ Decisión GO/NO-GO
 
 **Timeline:** 30 días paper trading + 1 semana análisis = ~5 semanas
 
-### 2. Dashboard Monitoring Bot 8 (MEDIUM PRIORITY)
+### 2. Completar Issue #1 Sprints 2-4 (PRIORIDAD MEDIA)
+- Sprint 2: Migración arquitectura
+- Sprint 3: Documentación español
+- Sprint 4: Consolidación DevOps
 
-**Objetivo:** Monitorear Bot 8 paper trading en tiempo real vía dashboard.
-
-**Tareas:**
-1. ✅ Dashboard completo (7 páginas)
-2. ✅ WebSocket real-time updates
-3. ⏳ **PRÓXIMO:** Conectar Bot 8 paper trading al dashboard
-4. ⏳ Crear vista específica Bot 8:
-   - Métricas en tiempo real (win rate, Sharpe, DD)
-   - Alertas circuit breakers
-   - Gráficos P&L evolution
-   - Zone exposure heatmap
-
-**Commit Ready:** 84828ea (dashboard complete)
-
-### 3. Live Trading Preparation (LOW PRIORITY - after validation)
-
-**Objetivo:** Preparar infraestructura para live deployment post-validación.
-
-**Tareas:**
-1. ⏳ Hot wallet setup (BIP39 mnemonic)
-2. ⏳ Cold storage allocation (80-90%)
-3. ⏳ Mainnet configuration (Polygon)
-4. ⏳ Alert system setup (email/Slack/SMS)
-5. ⏳ Backup/recovery procedures
-6. ⏳ Security audit
-
-**Bloqueador:** Esperar validación Bot 8 paper trading
+### 3. Preparación Live Trading (PRIORIDAD BAJA)
+Bloqueado hasta validación Bot 8
 
 ---
 
-## 📊 MÉTRICAS PROYECTO
+## 📖 GLOSARIO
 
-**Código:**
-- Python files: ~168 archivos (target)
-- Lines of code: ~15,000 (estimado)
-- Test coverage: ≥80% (target)
-- Type hint coverage: 100% (mypy strict)
-
-**Bots:**
-- Total: 10 bots
-- Implementados: 10 (100%)
-- Tested: 10 (100%)
-- Production-ready: 10 (100%)
-- Prioridad: Bot 8 (Tail Risk)
-
-**Fases:**
-- Total: 17 fases roadmap
-- Completadas: 14 (82.4%)
-- En progreso: 1 (Bot 8 validation)
-- Pendientes: 2 (Live + Optimization)
-
-**Performance Targets:**
-- Order latency: <100ms p99 ✅
-- Database queries: <10ms simple ✅
-- Dashboard load: <100ms ✅
-- Emergency halt: <10s ✅
-- Test execution: <5s unit, <30s integration ✅
-
-**Risk:**
-- Circuit breakers: 4 types ✅
-- Risk zones: 5 levels ✅
-- Max drawdown: 40% portfolio, 25% bot ✅
-- Kelly fraction: Half Kelly max ✅
-- Order type: POST_ONLY (Bot 8) ✅
+- **CLOB:** Central Limit Order Book (exchange Polymarket)
+- **DDD:** Diseño Guiado por Dominio
+- **EIP-1559:** Propuesta de Mejora de Ethereum (fees de gas dinámicos)
+- **Kelly:** Criterio de Kelly (dimensionamiento óptimo de posición)
+- **POST_ONLY:** Órdenes solo maker (sin ejecución inmediata)
+- **Sharpe Ratio:** Métrica de retorno ajustada por riesgo
+- **Tail Risk:** Eventos de baja probabilidad, alto impacto
+- **WebSocket:** Protocolo de comunicación bidireccional en tiempo real
+- **Zona:** Zona de riesgo basada en probabilidad de mercado
 
 ---
 
-## 🔒 SECURITY CHECKLIST
+## 📆 CHANGELOG (RECIENTE)
 
-**Wallet:**
-- [ ] BIP39 mnemonic generated offline
-- [ ] Mnemonic backed up securely (3 copies, 3 locations)
-- [ ] Cold storage setup (hardware wallet)
-- [ ] Hot wallet funded <20% total capital
-- [ ] Multi-sig configured (optional)
-- [ ] Private keys NEVER logged
-- [ ] Private keys NEVER transmitted
+### 2026-02-15
+- ✅ Contexto traducido completamente a español
+- ✅ Documentada arquitectura en transición (legacy + objetivo)
+- ✅ Agregada sección estado de auditoría Issue #1
+- ✅ Problemas conocidos documentados
 
-**Infrastructure:**
-- [ ] All secrets in .env (not committed)
-- [ ] gitleaks scan passing
-- [ ] No hardcoded credentials
-- [ ] Database encrypted at rest
-- [ ] TLS/SSL for all external connections
-- [ ] Rate limiting enabled
-- [ ] CORS configured properly
+### 2026-02-14
+- ✅ Bot 8 Tail Risk implementado (commit 6c06d89)
+- ✅ Domain Events creado (commit 51a398d)
+- ✅ BotManager implementado (commit 7724290)
+- ✅ Stubs companion eliminados
+- ✅ CI/CD pipelines implementados
 
-**Code:**
-- [ ] Input validation comprehensive
-- [ ] SQL injection prevention (parameterized queries)
-- [ ] No eval() or exec() usage
-- [ ] Dependency vulnerability scan (safety)
-- [ ] Regular security audits scheduled
-
-**Deployment:**
-- [ ] Separate dev/staging/prod environments
-- [ ] Different wallets per environment
-- [ ] Monitoring/alerting configured
-- [ ] Backup/recovery tested
-- [ ] Incident response plan documented
+### 2026-02-13
+- ✅ Issue #1 creado: Auditoría completa del proyecto
+- ✅ GROUND_TRUTH_REPORT.md generado
+- ✅ .gitignore corregido
+- ✅ LICENSE MIT completo
+- ✅ Tests de integración ciclo de vida bot
 
 ---
 
-## 📝 CHANGELOG (RECENT)
+**FIN DEL CONTEXTO**
 
-### 2026-02-13 (14 commits)
-- ✅ **CRITICAL FIX:** Reconstructed complete accurate context (this file)
-- ✅ Integration Tests: Bot lifecycle (5 scenarios, ≥85% coverage)
-- ✅ Dashboard Part 4/4: Risk Monitor + Settings (Phase 12 COMPLETE)
-- ✅ Dashboard Part 3/4: Positions + Order Log
-- ✅ Dashboard Part 2/4: Bot Control + Performance
-- ✅ Dashboard Part 1/4: Base + Overview + WebSocket
-- ✅ Paper Trading Part 4/4: Comprehensive tests (Phase 14 COMPLETE)
-- ✅ Paper Trading Part 3/4: Use cases
-- ✅ Paper Trading Part 2/4: Engine implementation
-- ✅ Paper Trading Part 1/4: Bot 8 config + validation
-- ✅ Orchestration Part 4/4: Factory + integration (Phase 11 COMPLETE)
-- ✅ Orchestration Part 3/4: Retry + graceful degradation
-- ✅ Orchestration Part 2/4: Health checker + event bus
-- ✅ Orchestration Part 1/4: Bot orchestrator
-
----
-
-## 🎓 KNOWLEDGE BASE
-
-**Kelly Criterion:**
-```
-Kelly = (bp - q) / b
-
-Example:
-- Win rate: 54% (p=0.54, q=0.46)
-- Odds: 1:1 (b=1)
-- Kelly = (1*0.54 - 0.46) / 1 = 0.08 (8% of capital)
-- Half Kelly = 0.04 (4% of capital) ← Bot 8 default
-- Quarter Kelly = 0.02 (2% of capital)
-```
-
-**Risk Zones Logic:**
-```
-Tail Risk (Bot 8 zones):
-- Z1: 15-25% or 75-85% → HIGH EDGE (15%+)
-- Z2: 25-35% or 65-75% → MEDIUM EDGE (10%+)
-
-Prohibited (Bot 8):
-- Z3: 35-45% or 55-65% → LOW EDGE (5%)
-- Z4: 45-48% or 52-55% → MINIMAL EDGE (3%)
-- Z5: 48-52% → COIN FLIP (0% edge)
-```
-
-**Circuit Breaker Logic:**
-```python
-if consecutive_losses >= 3:
-    pause_bot()  # Immediate
-
-if daily_loss_pct >= 5.0:
-    halt_all_bots()  # Portfolio-wide
-
-if bot_drawdown_pct >= 25.0:
-    pause_specific_bot()  # Bot-specific
-
-if portfolio_drawdown_pct >= 40.0:
-    emergency_halt()  # System-wide
-```
-
-**WebSocket vs REST:**
-```
-WebSocket (REQUIRED Bot 8):
-- Latency: 10-50ms
-- Real-time updates
-- Push-based
-- Efficient bandwidth
-
-REST (PROHIBITED Bot 8):
-- Latency: 100-500ms
-- Polling overhead
-- Pull-based
-- Stale data risk
-```
-
----
-
-## 📖 GLOSSARY
-
-- **CLOB:** Central Limit Order Book (Polymarket exchange)
-- **DDD:** Domain-Driven Design
-- **EIP-1559:** Ethereum Improvement Proposal (dynamic gas fees)
-- **Kelly:** Kelly Criterion (optimal position sizing)
-- **POST_ONLY:** Maker-only orders (no immediate execution)
-- **Sharpe Ratio:** Risk-adjusted return metric
-- **Tail Risk:** Low probability, high impact events
-- **WebSocket:** Bidirectional real-time communication protocol
-- **Zone:** Risk zone based on market probability
-
----
-
-**END OF CONTEXT**
-
-**Last Updated:** 2026-02-15 03:00 CET  
-**Next Review:** Before any phase transition  
-**Maintained By:** AI System (with mandatory verification)  
-**Single Source of Truth:** This file is authoritative
+**Última Actualización:** 2026-02-15 04:00 CET
+**Próxima Revisión:** Antes de cualquier transición de fase
+**Mantenido Por:** Sistema AI (con verificación obligatoria)
+**Fuente Única de Verdad:** Este archivo es autoritativo
