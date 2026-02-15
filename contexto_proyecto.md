@@ -1,8 +1,9 @@
 # PETS - Polymarket Elite Trading System
 ## Contexto Completo del Proyecto
-**Last Verified:** 2026-02-13 03:16 CET  
+**Last Verified:** 2026-02-15 03:00 CET  
 **Last Commit:** 7aa0b7993d482a39836e064f7e52f87634d9e3d8  
 **Project Status:** 14/17 Phases COMPLETE (82.4%)  
+**Idioma del Proyecto:** Español (todas las contribuciones, documentación y comentarios deben estar en español)
 
 ---
 
@@ -70,20 +71,20 @@
 
 ### 1. BOTS (10/10 COMPLETOS) ✅
 
-**Verified:** 2026-02-13 (source code inspection)
+**Verified:** 2026-02-15 (source code inspection)
 
 | Bot | Strategy | File | Status | Evidence |
 |-----|----------|------|--------|----------|
-| Bot 1 | Mean Reversion | `bot_01_mean_reversion.py` | ✅ COMPLETO | File exists |
-| Bot 2 | Volatility Breakout | `bot_02_volatility_breakout.py` | ✅ COMPLETO | File exists |
-| Bot 3 | Correlation Trading | `bot_03_correlation.py` | ✅ COMPLETO | File exists |
-| Bot 4 | Sentiment Analysis | `bot_04_sentiment.py` | ✅ COMPLETO | File exists |
-| Bot 5 | Arbitrage Scanner | `bot_05_arbitrage.py` | ✅ COMPLETO | File exists |
-| Bot 6 | Zone Rotation | `bot_06_zone_rotation.py` | ✅ COMPLETO | File exists |
-| Bot 7 | Event-Driven | `bot_07_event_driven.py` | ✅ COMPLETO | File exists |
-| Bot 8 | **Tail Risk (PRIORITY)** | `bot_08_tail_risk.py` | ✅ COMPLETO | Commit 258dc5d |
+| Bot 1 | Market Rebalancing | `bot_01_rebalancer.py` | ✅ COMPLETO | File exists |
+| Bot 2 | Esports Trading | `bot_02_esports.py` | ✅ COMPLETO | File exists |
+| Bot 3 | Copy Trading | `bot_03_copy_trading.py` | ✅ COMPLETO | File exists |
+| Bot 4 | News-Driven | `bot_04_news_driven.py` | ✅ COMPLETO | File exists |
+| Bot 5 | Market Making | `bot_05_market_making.py` | ✅ COMPLETO | File exists |
+| Bot 6 | Multi-Outcome Arbitrage | `bot_06_multi_outcome.py` | ✅ COMPLETO | File exists |
+| Bot 7 | Contrarian | `bot_07_contrarian.py` | ✅ COMPLETO | File exists |
+| Bot 8 | **Tail Risk (PRIORITY)** | `bot_08_tail_risk_combo.py` | ✅ COMPLETO | Commit 258dc5d |
 | Bot 9 | Advanced Kelly | `bot_09_advanced_kelly.py` | ✅ COMPLETO | **SOURCE CODE VERIFIED** |
-| Bot 10 | Long-term Holder | `bot_10_longterm.py` | ✅ COMPLETO | **SOURCE CODE VERIFIED** |
+| Bot 10 | Long-term Value | `bot_10_longterm.py` | ✅ COMPLETO | **SOURCE CODE VERIFIED** |
 
 **Bot 8 Priority Evidence:**
 - Config completo: `configs/bots/bot_8_config.yaml`
@@ -218,44 +219,44 @@ tests/integration/
 
 ## 🗺️ ROADMAP COMPLETO (17 FASES)
 
-### ✅ FASE 1: Bot 1 - Mean Reversion (COMPLETO)
+### ✅ FASE 1: Bot 1 - Market Rebalancing (COMPLETO)
 **Status:** Production-ready  
-**Files:** `bot_01_mean_reversion.py`, config, tests  
+**Files:** `bot_01_rebalancer.py`, config, tests  
 **Features:** Z-score reversion, Bollinger Bands, Half Kelly
 
-### ✅ FASE 2: Bot 2 - Volatility Breakout (COMPLETO)
+### ✅ FASE 2: Bot 2 - Esports Trading (COMPLETO)
 **Status:** Production-ready  
-**Files:** `bot_02_volatility_breakout.py`, config, tests  
+**Files:** `bot_02_esports.py`, config, tests  
 **Features:** ATR breakout, volume confirmation, dynamic stops
 
-### ✅ FASE 3: Bot 3 - Correlation Trading (COMPLETO)
+### ✅ FASE 3: Bot 3 - Copy Trading (COMPLETO)
 **Status:** Production-ready  
-**Files:** `bot_03_correlation.py`, config, tests  
+**Files:** `bot_03_copy_trading.py`, config, tests  
 **Features:** Multi-market correlation, divergence detection
 
-### ✅ FASE 4: Bot 4 - Sentiment Analysis (COMPLETO)
+### ✅ FASE 4: Bot 4 - News-Driven (COMPLETO)
 **Status:** Production-ready  
-**Files:** `bot_04_sentiment.py`, config, tests  
+**Files:** `bot_04_news_driven.py`, config, tests  
 **Features:** News sentiment, social media signals, NLP
 
-### ✅ FASE 5: Bot 5 - Arbitrage Scanner (COMPLETO)
+### ✅ FASE 5: Bot 5 - Market Making (COMPLETO)
 **Status:** Production-ready  
-**Files:** `bot_05_arbitrage.py`, config, tests  
+**Files:** `bot_05_market_making.py`, config, tests  
 **Features:** Cross-market arbitrage, latency arbitrage
 
-### ✅ FASE 6: Bot 6 - Zone Rotation (COMPLETO)
+### ✅ FASE 6: Bot 6 - Multi-Outcome Arbitrage (COMPLETO)
 **Status:** Production-ready  
-**Files:** `bot_06_zone_rotation.py`, config, tests  
-**Features:** Risk zone rotation, dynamic allocation
+**Files:** `bot_06_multi_outcome.py`, config, tests  
+**Features:** Risk Multi-Outcome Arbitrage, dynamic allocation
 
-### ✅ FASE 7: Bot 7 - Event-Driven (COMPLETO)
+### ✅ FASE 7: Bot 7 - Contrarian (COMPLETO)
 **Status:** Production-ready  
-**Files:** `bot_07_event_driven.py`, config, tests  
+**Files:** `bot_07_contrarian.py`, config, tests  
 **Features:** Event catalyst trading, scheduled events
 
 ### ✅ FASE 8: Bot 8 - Tail Risk (COMPLETO) 🎯 **PRIORITY**
 **Status:** Production-ready, awaiting paper trading validation  
-**Files:** `bot_08_tail_risk.py`, `bot_8_config.yaml`, tests  
+**Files:** `bot_08_tail_risk_combo.py`, `bot_8_config.yaml`, tests  
 **Evidence:** $106K historical profits documented  
 **Constraints:**
 - Zones: Z1-Z2 ONLY (Z3-Z5 PROHIBITED)
@@ -279,7 +280,7 @@ tests/integration/
 - Portfolio correlation optimization
 - Market efficiency scoring
 
-### ✅ FASE 10: Bot 10 - Long-term Holder (COMPLETO)
+### ✅ FASE 10: Bot 10 - Long-term Value (COMPLETO)
 **Status:** Production-ready  
 **Files:** `bot_10_longterm.py`, config, tests  
 **Verified:** SOURCE CODE INSPECTED 2026-02-13  
@@ -461,7 +462,7 @@ tests/integration/
 **Potential Features:**
 1. Machine Learning:
    - Price prediction models
-   - Sentiment analysis ML
+   - News-Driven ML
    - Pattern recognition
 
 2. Advanced Strategies:
@@ -1088,7 +1089,7 @@ REST (PROHIBITED Bot 8):
 
 **END OF CONTEXT**
 
-**Last Updated:** 2026-02-13 03:16 CET  
+**Last Updated:** 2026-02-15 03:00 CET  
 **Next Review:** Before any phase transition  
 **Maintained By:** AI System (with mandatory verification)  
 **Single Source of Truth:** This file is authoritative
